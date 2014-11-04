@@ -21,7 +21,7 @@ abort 'missing malloc()' unless have_func 'malloc'
 abort 'missing free()' unless have_func 'free'
 
 # Give it a name
-extension_name = 'hybrid8'
+extension_name = 'h8'
 
 
 dir_config(extension_name)
@@ -59,4 +59,21 @@ else
 
   raise "Unable to build, correct above errors and rerun"
 end
+
+LIBV8_COMPATIBILITY = '~> 3.16.14'
+
+begin
+  require 'rubygems'
+  gem 'libv8', LIBV8_COMPATIBILITY
+rescue Gem::LoadError
+  warn "Warning! Unable to load libv8 #{LIBV8_COMPATIBILITY}."
+rescue LoadError
+  warn "Warning! Could not load rubygems. Please make sure you have libv8 #{LIBV8_COMPATIBILITY} installed."
+ensure
+  require 'libv8'
+end
+
+Libv8.configure_makefile
+
+create_makefile('h8/h8')
 
