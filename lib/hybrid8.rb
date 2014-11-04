@@ -1,5 +1,5 @@
-require "hybrid8/version"
+require "h8/version"
 
-module Hybrid8
+module H8
   # Your code goes here...
 end

@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'hybrid8/version'
+require 'h8/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "hybrid8"
-  spec.version       = Hybrid8::VERSION
+  spec.name          = "h8"
+  spec.version       = H8::VERSION
   spec.authors       = ["sergeych"]
   spec.email         = ["sergeych"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{Minimalistic and sane v8 bindings}
+  spec.description   = %q{Should be more or less replacement for broken therubyracer gem and riny 2.1+ }
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -20,4 +20,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
+
+  spec.add_dependency 'libv8'
 end

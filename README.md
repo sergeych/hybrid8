@@ -1,6 +1,8 @@
 # Hybrid8
 
-TODO: Write a gem description
+_Warning_ this gem is not yet functional. Please do not try to use until versions >= 0.1.0! 
+
+Therubyracer gem alternative to work with ruby 2.1+ in multithreaded environment.
 
 ## Installation
 
