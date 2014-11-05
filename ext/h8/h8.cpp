@@ -44,20 +44,30 @@ static VALUE rvalue_is_string(VALUE self) {
     return rv(self)->is_string();
 }
 
+inline RContext* rc(VALUE self) {
+    RContext *prcxt;
+    Data_Get_Struct(self, RContext, prcxt);
+    return prcxt;
+}
+
+static VALUE context_set_instance(VALUE self,VALUE name,VALUE instance) {
+    return Qnil;
+}
 
 
 static VALUE context_eval(VALUE self,VALUE script) {
     const char* str = StringValueCStr(script);
-    RContext *rcon;
-    Data_Get_Struct(self, RContext, rcon);
-    Handle<Value> result = rcon->eval(str);
+
+    RContext *rcon = rc(self);
+
+    rcon->eval(str);
     if( rcon->isError() )
         return Qnil;
 
     VALUE rvalue = rb_class_new_instance(0, NULL, rvalue_class);
     RValue *pValue;
     Data_Get_Struct(rvalue, RValue, pValue);
-    pValue->value = result;
+    pValue->setValue(rcon->getLastResult());
 
     return rvalue;
 }
@@ -72,6 +82,8 @@ static VALUE context_alloc(VALUE klass) {
 
 
 void Init_h8(void) {
+    RContext::init();
+
     VALUE h8 = rb_define_module("H8");
 
     context_class = rb_define_class_under(h8, "Context", rb_cObject);

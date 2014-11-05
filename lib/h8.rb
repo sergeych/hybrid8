@@ -1,4 +1,3 @@
-require 'libv8'
 require 'h8/version'
 require 'h8/context'
 require 'h8/value'

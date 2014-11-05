@@ -6,11 +6,14 @@ namespace h8 {
 class RValue {
 public:
 
-    Handle<Value> value;
+    void setValue(Handle<Value> val) {
+        value = val;
+    }
 
     VALUE to_s() {
-        String::Utf8Value res(value);
-        return rb_str_new2(*res);
+//        String::Utf8Value res(value);
+//        return *res ? rb_str_new2(*res) : Qnil;
+        return rb_str_new2("--1");
     }
 
     VALUE to_i() {
@@ -27,6 +30,8 @@ public:
     VALUE is_string() {
         return value->IsString() ? Qtrue : Qfalse;
     }
+private:
+    Handle<Value> value;
 };
 
 }

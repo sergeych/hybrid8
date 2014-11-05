@@ -27,15 +27,15 @@ extension_name = 'h8'
 dir_config(extension_name)
 ok = true
 
-# unless have_header('gmp.h')
-#   $stderr.puts "can't find gmp.h, try --with-gmp-include=<path>"
-#   ok = false
-# end
-#
-# unless have_library('gmp', '__gmpz_init')
-#   $stderr.puts "can't find -lgmp, try --with-gmp-lib=<path>"
-#   ok = false
-# end
+unless have_header('v8.h')
+  $stderr.puts "can't find v8.h, install libv8 3.25.30+ first"
+  ok = false
+end
+
+unless have_library('v8') && have_library('v8_snapshot')
+  $stderr.puts "can't find libv8"
+  ok = false
+end
 
 
 # This test is actually due to a Clang 3.3 shortcoming, included in OS X 10.9,
@@ -60,20 +60,20 @@ else
   raise "Unable to build, correct above errors and rerun"
 end
 
-LIBV8_COMPATIBILITY = '~> 3.16.14'
-
-begin
-  require 'rubygems'
-  gem 'libv8', LIBV8_COMPATIBILITY
-rescue Gem::LoadError
-  warn "Warning! Unable to load libv8 #{LIBV8_COMPATIBILITY}."
-rescue LoadError
-  warn "Warning! Could not load rubygems. Please make sure you have libv8 #{LIBV8_COMPATIBILITY} installed."
-ensure
-  require 'libv8'
-end
-
-Libv8.configure_makefile
+# LIBV8_COMPATIBILITY = '~> 3.30'
+#
+# begin
+#   require 'rubygems'
+#   gem 'libv8', LIBV8_COMPATIBILITY
+# rescue Gem::LoadError
+#   warn "Warning! Unable to load libv8 #{LIBV8_COMPATIBILITY}."
+# rescue LoadError
+#   warn "Warning! Could not load rubygems. Please make sure you have libv8 #{LIBV8_COMPATIBILITY} installed."
+# ensure
+#   require 'libv8'
+# end
+#
+# Libv8.configure_makefile
 
 create_makefile('h8/h8')
 
