@@ -1,7 +1,7 @@
 #ifndef _h8_h
 #define _h8_h
 
-#include <v8.h>
+#include <include/v8.h>
 #include <ruby.h>
 #include <iostream>
 

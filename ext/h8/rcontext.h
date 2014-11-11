@@ -5,83 +5,126 @@
 
 namespace h8 {
 
-    class RContext {
-    public:
-        static void init();
+	template <class T> inline void t(const T& x) {
+		cout << x << endl;
+	}
 
-        RContext() {
-//            isolate = Isolate::New();
-//            Isolate::Scope isolate_scope(isolate);
+	class RContext {
+		class Scope  : public EscapableHandleScope{
+			v8::Isolate::Scope isolate_scope;
+			v8::Context::Scope context_scope;
+			RContext* rcontext;
+		public:
+			Scope(RContext* cxt)
+			: isolate_scope(cxt->getIsolate()), context_scope(cxt->getContext()),
+			  rcontext(cxt), EscapableHandleScope((cxt->getIsolate()))
+			{
+			}
+		};
 
-            isolate = Isolate::GetCurrent();
-        	HandleScope handle_scope(isolate);
-        	Handle<ObjectTemplate> global = ObjectTemplate::New();
-        	global->Set(String::NewFromUtf8(isolate, "print"), FunctionTemplate::New(isolate, RContext::Print));
-        	context = Context::New(isolate, NULL, global);
-                context->Enter();
-        }
 
-        void eval(const char* utf) {
-                	cout << "A" << endl;
+	public:
+		static void init();
 
-            HandleScope handle_scope(isolate);
-                    	cout << "b" << endl;
+		RContext() {
+			isolate = Isolate::New();
+			Isolate::Scope isolate_scope(isolate);
+			HandleScope handle_scope(isolate);
 
-        	cout << "c" << endl;
+			t("i");
+			// Create a template for the global object.
+			v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
 
-            Local<String> str(String::NewFromUtf8(isolate, utf));
-            Local<String> name(String::NewFromUtf8(isolate, "--eval--"));
-        	cout << "3" << endl;
+			// Create a new execution environment containing the built-in
+			// functions
+			v8::Handle<v8::Context> context = v8::Context::New(isolate, NULL, global);
+			persistent_context.Reset(isolate, context);
+		}
 
-            TryCatch try_catch;
+		void eval(const char* script_utf) {
+			t("-1");
+//			v8::Isolate::Scope isolate_scope(isolate);
+			t("-2");
+//			v8::Context::Scope context_scope(getContext());
+			t("-3");
+			RContext::Scope handle_scope(this);
+//			EscapableHandleScope handle_scope(isolate);
 
-            is_error = false;
-        	cout << "e" << endl;
+			cout << "--------" << endl;
+			// Enter the newly created execution environment.
+			t("hs!");
+			{
+				// FIXME!!! Context::Scope should be around all operations with the context (it does Enter/Exit!)
 
-            Handle<Script> script = Script::Compile(str, name);
-                    	cout << "0" << endl;
 
-            if (script.IsEmpty()) {
-                // Print errors that happened during compilation.
-                report_exception(try_catch);
-            } else {
-        	cout << "1" << endl;
-                        	cout << "2" << endl;
+				cout << "A" << endl;
 
-                last_result = script->Run();
-                        	cout << "3" << endl;
+				Handle<v8::String> script_source = String::NewFromUtf8(isolate, script_utf);
+				v8::Handle<v8::Script> script;
 
-                        	cout << "4" << endl;
+				t("b");
 
-                if (last_result.IsEmpty())
-                    // Print errors that happened during execution.
-                    report_exception(try_catch);
-            }
-        }
+				// Compile script in try/catch context.
+				t("b1");
 
-        Handle<Value> getLastResult() const {
-            return last_result;
-        }
+				v8::TryCatch try_catch;
+				t("b2");
 
-        bool isError() const {
-            return is_error;
-        }
+				v8::ScriptOrigin origin(String::NewFromUtf8(isolate, "eval"));
+				t("c");
 
-        virtual ~RContext() {
-            context->Exit();
-        }
+				script = v8::Script::Compile(script_source, &origin);
 
-    private:
-        Isolate *isolate;
-        void report_exception(v8::TryCatch& tc);
+				t("d");
 
-        static void Print(const v8::FunctionCallbackInfo<v8::Value>& args);
+				if (script.IsEmpty()) {
+					// Print errors that happened during compilation.
+					report_exception(try_catch);
+				}
+				else {
+					t("e");
+					lastResult.Reset(isolate, script->Run());
+					t("f");
 
-        Handle<Context> context;
-        Handle<Value> last_result;
+					if (try_catch.HasCaught()) {
+						report_exception(try_catch);
+					}
+					t("g");
+				}
+			}
+			String::Utf8Value u(Local<Value>::New(isolate, lastResult));
 
-        bool is_error;
-    }; // Context
+			cout << "extracted!"<< endl;
+			cout << "Extracted utf" << *u << endl;
+		}
+
+		Handle<Context> getContext() {
+			return Local<Context>::New(isolate, persistent_context);
+		}
+
+		bool isError() const {
+			return is_error;
+		}
+
+		Isolate* getIsolate() const {return isolate;}
+
+		virtual ~RContext() {
+			persistent_context.Reset();
+		}
+
+		Persistent<Value,CopyablePersistentTraits<v8::Value>> getLastResult() {return lastResult;}
+
+	private:
+		Isolate *isolate;
+		void report_exception(v8::TryCatch& tc);
+
+		static void Print(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+		Persistent<Context> persistent_context;
+
+		Persistent<Value,CopyablePersistentTraits<v8::Value>> lastResult;
+		bool is_error = false;
+	}; // Context
 }
 
 #endif

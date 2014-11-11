@@ -23,16 +23,18 @@ abort 'missing free()' unless have_func 'free'
 # Give it a name
 extension_name = 'h8'
 
+dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/lib')
 
 dir_config(extension_name)
 ok = true
 
-unless have_header('v8.h')
+unless have_header('include/v8.h')
   $stderr.puts "can't find v8.h, install libv8 3.25.30+ first"
   ok = false
 end
 
-unless have_library('v8') && have_library('v8_snapshot')
+unless have_library('v8_base') && have_library('v8_snapshot') && have_library('v8_libplatform') \
+  && have_library('v8_libbase') && have_library('icuuc') && have_library('icudata')
   $stderr.puts "can't find libv8"
   ok = false
 end

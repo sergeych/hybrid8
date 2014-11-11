@@ -5,10 +5,6 @@
 using namespace h8;
 
 
-void RContext::init() {
-    v8::V8::InitializeICU();
-}
-
 void RContext::Print(const FunctionCallbackInfo<v8::Value>& args) {
 	bool first = true;
 	for (int i = 0; i < args.Length(); i++) {

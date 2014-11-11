@@ -2,7 +2,8 @@
 
 _Warning_ this gem is not yet functional. Please do not try to use until versions >= 0.1.0! 
 
-Therubyracer gem alternative to work with ruby 2.1+ in multithreaded environment.
+Therubyracer gem alternative to effectively work with ruby 2.1+ in multithreaded environment. Reduced
+feature set for speed and efficiency. But we're just started.
 
 ## Installation
 
