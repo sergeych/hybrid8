@@ -9,7 +9,7 @@ namespace h8 {
     class RubyWrap : public ObjectWrap {
     public:
 
-        RubyWrap(RContext* ctx) : context(ctx) {
+        RubyWrap(H8* ctx) : context(ctx) {
             ctx->registerWrap(this);
         }
 
@@ -22,7 +22,7 @@ namespace h8 {
         }
 
     private:
-        RContext *context;
+        H8 *context;
         VALUE instance = Qnil;
 
     };
