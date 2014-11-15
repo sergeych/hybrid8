@@ -12,16 +12,16 @@ VALUE context_class;
 VALUE value_class;
 
 static void rvalue_free(void* ptr) {
-	delete (Gate*) ptr;
+	delete (JsGate*) ptr;
 }
 
-static VALUE rvalue_alloc(VALUE klass) {
-	return Data_Wrap_Struct(klass, 0, rvalue_free, new Gate);
+VALUE rvalue_alloc(VALUE klass) {
+	return Data_Wrap_Struct(klass, 0, rvalue_free, new JsGate);
 }
 
-inline Gate* rv(VALUE self) {
-	Gate *gate;
-	Data_Get_Struct(self, Gate, gate);
+inline JsGate* rv(VALUE self) {
+	JsGate *gate;
+	Data_Get_Struct(self, JsGate, gate);
 	return gate;
 }
 
@@ -69,11 +69,7 @@ static VALUE context_eval(VALUE self, VALUE script) {
 	if (cxt->isError())
 		return Qnil;
 
-    Gate *gate;
-    VALUE ruby_gate = rb_class_new_instance(0, NULL, value_class);
-    Data_Get_Struct(ruby_gate, Gate, gate);
-    gate->set(cxt, res);
-    return ruby_gate;
+    return JsGate::to_ruby(cxt, res);
 }
 
 static void context_free(void* ptr) {

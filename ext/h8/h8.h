@@ -98,6 +98,7 @@ private:
 
 extern VALUE h8_exception;
 extern VALUE h8_class;
+extern VALUE value_class;
 
 typedef VALUE (*ruby_method)(...);
 
