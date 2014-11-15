@@ -14,49 +14,50 @@ public:
 	template<class T>
 	void set(H8 *h8, const Handle<T>& val) {
 		this->h8 = h8;
-
-		printf("RESET");
-		value.Reset(h8->getIsolate(), val);
-		printf("RESET done, cerating ruby object");
+		persistent_value.Reset(h8->getIsolate(), val);
 	}
 
 	VALUE to_s() {
-		printf("TO_S");
 		H8::Scope scope(h8);
-//    	Local<Value> v = Local<Value>::New(isolate, p_value);
-		printf("EXT");
-
-		String::Utf8Value res(Local<Value>::New(h8->getIsolate(), value));
-		printf("GOT %s", *res);
+		String::Utf8Value res(value());
 		return *res ? rb_str_new2(*res) : Qnil;
 	}
 
 	VALUE to_i() {
-//        return INT2FIX(value->IntegerValue());
-		return Qnil;
+		H8::Scope scope(h8);
+        return INT2FIX(value()->IntegerValue());
 	}
 
 	VALUE is_int() {
-//        return value->IsInt32() ? Qtrue : Qfalse;
-		return Qnil;
+		H8::Scope scope(h8);
+        return value()->IsInt32() ? Qtrue : Qfalse;
 	}
 
 	VALUE is_float() {
-//        return value->IsNumber() ? Qtrue : Qfalse;
-		return Qnil;
+		H8::Scope scope(h8);
+        return value()->IsNumber() ? Qtrue : Qfalse;
 	}
 
 	VALUE is_string() {
-//        return value->IsString() ? Qtrue : Qfalse;
-		return Qnil;
+		H8::Scope scope(h8);
+        return value()->IsString() ? Qtrue : Qfalse;
 	}
 
 	~Gate() {
-		value.Reset();
+		persistent_value.Reset();
 	}
+
+	Local<Value> value() const {
+		return Local<Value>::New(h8->getIsolate(), persistent_value);
+	}
+
+	Isolate* isolate() {
+		return h8->getIsolate();
+	}
+
 private:
 	H8 *h8;
-	Persistent<Value> value;
+	Persistent<Value> persistent_value;
 };
 
 }

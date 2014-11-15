@@ -9,7 +9,7 @@ void Init_h8(void);
 
 VALUE h8_exception;
 VALUE context_class;
-VALUE rvalue_class;
+VALUE value_class;
 
 static void rvalue_free(void* ptr) {
 	delete (Gate*) ptr;
@@ -66,22 +66,14 @@ static VALUE context_eval(VALUE self, VALUE script) {
 	H8::Scope s(cxt);
 
 	Handle<Value> res = cxt->eval(StringValueCStr(script));
-	printf("eval done!\n");
-
 	if (cxt->isError())
 		return Qnil;
 
-	String::Utf8Value u(res);
-	printf("exctraced res: %s\n", *u);
-
-
-//	return Qnil;
-    VALUE rvalue = rb_class_new_instance(0, NULL, rvalue_class);
     Gate *gate;
-    Data_Get_Struct(rvalue, Gate, gate);
+    VALUE ruby_gate = rb_class_new_instance(0, NULL, value_class);
+    Data_Get_Struct(ruby_gate, Gate, gate);
     gate->set(cxt, res);
-//
-    return rvalue;
+    return ruby_gate;
 }
 
 static void context_free(void* ptr) {
@@ -108,13 +100,13 @@ void Init_h8(void) {
 	rb_define_alloc_func(context_class, context_alloc);
 	rb_define_method(context_class, "eval", (ruby_method) context_eval, 1);
 
-	rvalue_class = rb_define_class_under(h8, "Value", rb_cObject);
-	rb_define_alloc_func(rvalue_class, rvalue_alloc);
-	rb_define_method(rvalue_class, "to_s", (ruby_method) rvalue_to_s, 0);
-	rb_define_method(rvalue_class, "to_i", (ruby_method) rvalue_to_i, 0);
-	rb_define_method(rvalue_class, "integer?", (ruby_method) rvalue_is_int, 0);
-	rb_define_method(rvalue_class, "float?", (ruby_method) rvalue_is_float, 0);
-	rb_define_method(rvalue_class, "string?", (ruby_method) rvalue_is_string,
+	value_class = rb_define_class_under(h8, "Value", rb_cObject);
+	rb_define_alloc_func(value_class, rvalue_alloc);
+	rb_define_method(value_class, "to_s", (ruby_method) rvalue_to_s, 0);
+	rb_define_method(value_class, "to_i", (ruby_method) rvalue_to_i, 0);
+	rb_define_method(value_class, "integer?", (ruby_method) rvalue_is_int, 0);
+	rb_define_method(value_class, "float?", (ruby_method) rvalue_is_float, 0);
+	rb_define_method(value_class, "string?", (ruby_method) rvalue_is_string,
 			0);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
