@@ -41,6 +41,10 @@ static VALUE rvalue_is_float(VALUE self) {
 	return rv(self)->is_float();
 }
 
+static VALUE rvalue_is_undefined(VALUE self) {
+	return rv(self)->is_undefined();
+}
+
 static VALUE rvalue_get_attr(VALUE self,VALUE name) {
 	return rv(self)->get_attribute(name);
 }
@@ -97,6 +101,8 @@ void Init_h8(void) {
 	rb_define_method(value_class, "integer?", (ruby_method) rvalue_is_int, 0);
 	rb_define_method(value_class, "float?", (ruby_method) rvalue_is_float, 0);
 	rb_define_method(value_class, "string?", (ruby_method) rvalue_is_string,
+			0);
+	rb_define_method(value_class, "undefined?", (ruby_method) rvalue_is_undefined,
 			0);
 	rb_define_method(value_class, "get_attr", (ruby_method) rvalue_get_attr,
 			1);

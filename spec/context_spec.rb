@@ -50,6 +50,12 @@ describe 'context' do
     res['bar'].to_i.should == 122
   end
 
-  it 'should retreive JS fieds as properties'
+  it 'should retreive JS fieds as properties' do
+    res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
+    p res
+    res.respond_to?(:foo).should be_true
+    res.foo.to_s.should == 'bar'
+    res.bar.to_i.should == 122
+  end
 
 end

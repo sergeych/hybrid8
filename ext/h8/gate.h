@@ -75,6 +75,10 @@ public:
         return value()->IsNumber() ? Qtrue : Qfalse;
 	}
 
+	/**
+	 * Retreive JS object attribute and convert it to the ruby wrapper
+	 * of the new JsGate instace.
+	 */
 	VALUE get_attribute(VALUE name) {
 		H8::Scope scope(h8);
 		Local<Value> v8_name = v8::String::NewFromUtf8(isolate(), StringValueCStr(name));
@@ -87,6 +91,11 @@ public:
 	VALUE is_string() {
 		H8::Scope scope(h8);
         return value()->IsString() ? Qtrue : Qfalse;
+	}
+
+	VALUE is_undefined() {
+		H8::Scope scope(h8);
+		return value()->IsUndefined() ? Qtrue : Qfalse;
 	}
 
 	~JsGate() {
