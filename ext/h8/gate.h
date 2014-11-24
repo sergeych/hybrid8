@@ -75,6 +75,12 @@ public:
         return value()->IsNumber() ? Qtrue : Qfalse;
 	}
 
+	VALUE get_attribute(VALUE name) {
+		H8::Scope scope(h8);
+		Local<Value> v8_name = v8::String::NewFromUtf8(isolate(), StringValueCStr(name));
+		return JsGate::to_ruby(h8, object()->Get(v8_name));
+	}
+
 	/**
 	 * @return true if the object is a primitive string
 	 */
@@ -90,6 +96,10 @@ public:
 protected:
 	Local<Value> value() const {
 		return Local<Value>::New(h8->getIsolate(), persistent_value);
+	}
+
+	Local<Object> object() const {
+		return value()->ToObject();
 	}
 
 	Isolate* isolate() {

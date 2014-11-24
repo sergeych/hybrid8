@@ -44,4 +44,12 @@ describe 'context' do
     res.should_not be_float
   end
 
+  it 'should retreive JS fieds as indexes' do
+    res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
+    res['foo'].to_s.should == 'bar'
+    res['bar'].to_i.should == 122
+  end
+
+  it 'should retreive JS fieds as properties'
+
 end

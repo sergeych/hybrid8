@@ -41,6 +41,10 @@ static VALUE rvalue_is_float(VALUE self) {
 	return rv(self)->is_float();
 }
 
+static VALUE rvalue_get_attr(VALUE self,VALUE name) {
+	return rv(self)->get_attribute(name);
+}
+
 static VALUE rvalue_is_string(VALUE self) {
 	return rv(self)->is_string();
 }
@@ -51,17 +55,7 @@ inline H8* rc(VALUE self) {
 	return prcxt;
 }
 
-static VALUE context_set_instance(VALUE self, VALUE name, VALUE instance) {
-	return Qnil;
-}
-
-void test1(Isolate* isolate) {
-	EscapableHandleScope scope(isolate);
-	cout << "111" << endl;
-}
-
 static VALUE context_eval(VALUE self, VALUE script) {
-
 	H8* cxt = rc(self);
 	H8::Scope s(cxt);
 
@@ -104,6 +98,8 @@ void Init_h8(void) {
 	rb_define_method(value_class, "float?", (ruby_method) rvalue_is_float, 0);
 	rb_define_method(value_class, "string?", (ruby_method) rvalue_is_string,
 			0);
+	rb_define_method(value_class, "get_attr", (ruby_method) rvalue_get_attr,
+			1);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 
