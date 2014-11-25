@@ -1,5 +1,5 @@
-#ifndef __gate_h
-#define __gate_h
+#ifndef __js_gate_h
+#define __js_gate_h
 
 #include "h8.h"
 

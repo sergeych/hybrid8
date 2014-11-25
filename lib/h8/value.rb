@@ -1,30 +1,30 @@
 module H8
 
+  # Wrapper for javascript objects.
+  #
+  # Important: when accessin fields of the object, respond_to? will not work due to
+  # js notation, instead, check the returned value to be value.undefined?
   class Value
     def inspect
       "<H8::Value #{to_s}>"
     end
 
+    # Get js object attribute by its name. It always return H8::Value instance, check
+    # it to be undefined? to see if there is such attribute
     def [] name
       return get_attr(name)
     end
 
-    def respond_to? method_sym, include_private = false
-      res = get_attr(method_sym.to_s)
-      if res.undefined?
-        super
-      else
-        true
-      end
-    end
-
+    # Optimized JS member access. Do not yet support calls!
+    # use only to get fields
     def method_missing(method_sym, *arguments, &block)
-      res = get_attr(method_sym.to_s)
-      if res.undefined?
-        super
-      else
-        res
-      end
+      name = method_sym.to_s
+      instance_eval <<-End
+              def #{name} *args, **kwargs
+                get_attr('#{name}')
+              end
+      End
+      send method_sym, *arguments
     end
   end
 
