@@ -93,6 +93,14 @@ describe 'js_gate' do
   it 'should convert arrays to ruby' do
     res = H8::Context.eval("[-10, 'foo', 'bar'];")
     res.to_ruby.should == [-10, 'foo', 'bar']
+    res.to_ary.should == [-10, 'foo', 'bar']
+    expect(-> { H8::Context.eval("'not array'").to_ary}).to raise_error(H8::Error)
+  end
+
+  it 'should provide hash methods' do
+    pending
+    obj = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
+    obj.keys.should == ['foo', 'bar']
   end
 
   it 'should convert compare to ruby objects' do

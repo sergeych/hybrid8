@@ -30,13 +30,23 @@ module H8
       send method_sym, *arguments
     end
 
-    def each_key
-      p eval("Object.keys(this)");
-    end
+    # def each_key
+    #   p eval("Object.keys(this)");
+    # end
+    #
+    # def keys
+    #   cxt = self._context
+    #   cxt['__self'] =
+    # end
 
     def <=> other
       other = other.to_ruby if other.is_a?(H8::Value)
       to_ruby <=> other
+    end
+
+    def to_ary
+      raise Error, 'Is not an array' unless array?
+      to_ruby
     end
 
     def to_ruby
