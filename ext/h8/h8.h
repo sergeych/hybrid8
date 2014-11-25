@@ -13,7 +13,7 @@ using namespace std;
 namespace h8 {
 
 template<class T> inline void t(const T& x) {
-	cout << x << endl;
+	cout << x << endl << flush;
 }
 
 class H8 {
@@ -54,7 +54,9 @@ public:
 		v8::Handle<v8::Script> script;
 		v8::TryCatch try_catch;
 		v8::ScriptOrigin origin(String::NewFromUtf8(isolate, "eval"));
+
 		script = v8::Script::Compile(script_source, &origin);
+
 		if (script.IsEmpty()) {
 			report_exception(try_catch);
 			result = Undefined(isolate);
@@ -68,6 +70,7 @@ public:
 	}
 
 	VALUE eval_to_ruby(const char* script_utf) {
+		// TODO: throw ruby exception on error
 		return to_ruby(eval(script_utf));
 	}
 

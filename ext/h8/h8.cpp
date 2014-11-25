@@ -21,7 +21,7 @@ void h8::rvalue_mark(void* ptr) {
 }
 
 VALUE rvalue_alloc(VALUE klass) {
-	return Data_Wrap_Struct(klass, 0, rvalue_free, new JsGate);
+	return Data_Wrap_Struct(klass, h8::rvalue_mark, rvalue_free, new JsGate);
 }
 
 inline JsGate* rv(VALUE self) {
@@ -83,12 +83,7 @@ inline H8* rc(VALUE self) {
 static VALUE context_eval(VALUE self, VALUE script) {
 	H8* cxt = rc(self);
 	H8::Scope s(cxt);
-
-	Handle<Value> res = cxt->eval(StringValueCStr(script));
-	if (cxt->isError())
-		return Qnil;
-
-    return JsGate::to_ruby(cxt, res);
+	return cxt->eval_to_ruby(StringValueCStr(script));
 }
 
 static void context_free(void* ptr) {

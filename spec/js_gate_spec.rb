@@ -69,12 +69,10 @@ describe 'context' do
     }
   end
 
-  it 'should eval with self adn keep context alive' do
-    pending
+  it 'should eval and keep context alive' do
     obj = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
     GC.start
-    res = obj.eval("this.foo+this.bar;")
-    res.should == 'bar122'
+    obj.foo.should == 'bar'
   end
 
   it 'should enumerate object key-value pairs' do
