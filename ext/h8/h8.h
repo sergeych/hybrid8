@@ -8,6 +8,10 @@
 using namespace v8;
 using namespace std;
 
+extern VALUE h8_exception;
+extern VALUE h8_class;
+extern VALUE value_class;
+
 //#include <ruby/thread.h>
 
 namespace h8 {
@@ -88,6 +92,33 @@ public:
 
 	VALUE to_ruby(Handle<Value> value);
 
+	v8::Local<v8::String> js(VALUE val) const {
+		return js(StringValueCStr(val));
+	}
+
+	v8::Local<v8::String> js(const char* str) const {
+		return v8::String::NewFromUtf8(isolate,str);
+	}
+
+	void set_var(VALUE name,VALUE value) {
+		Scope scope(this);
+		getContext()->Global()->Set(js(name), to_js(value));
+	}
+
+	Local<Value> to_js(VALUE ruby_value) {
+		switch( TYPE(ruby_value) ) {
+		case T_STRING:
+			return js(ruby_value);
+		case T_FIXNUM:
+			return v8::Int32::New(isolate, FIX2INT(ruby_value));
+		case T_FLOAT:
+			return v8::Number::New(isolate, NUM2DBL(ruby_value));
+		default:
+			rb_raise(h8_exception, "unknown type");
+			return Undefined(isolate);
+		}
+	}
+
 	virtual ~H8() {
 		persistent_context.Reset();
 	}
@@ -110,9 +141,6 @@ private:
 // Context
 }
 
-extern VALUE h8_exception;
-extern VALUE h8_class;
-extern VALUE value_class;
 
 typedef VALUE (*ruby_method)(...);
 

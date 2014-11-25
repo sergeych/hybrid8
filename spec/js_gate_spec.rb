@@ -71,17 +71,8 @@ describe 'context' do
 
   it 'should eval and keep context alive' do
     obj = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
-    GC.start
+    GC.start # Here Context of obj that is not referenced should be kept
     obj.foo.should == 'bar'
-  end
-
-  it 'should enumerate object key-value pairs' do
-    pending
-    obj = H8::Context.eval("Object.keys({ 'foo': 'bar', 'bar': 122 });")
-    obj.each_key
-    # keys = Set.new
-    # obj.each_key { |k|  keys << k }
-    pending
   end
 
   it 'should convert simple types to ruby' do

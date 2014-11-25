@@ -8,13 +8,28 @@ using namespace v8;
 namespace h8 {
 
 /**
+ * Interface to anything that could be converted to a Javascipt object. Provides common helpers.
+ */
+class JsValue {
+public:
+	virtual Local<Value> value() const = 0;
+
+	Local<Object> object() const {
+		return value()->ToObject();
+	}
+
+	virtual Isolate* isolate() = 0;
+};
+
+
+/**
  * Gates JS object to ruby environment. Holds persistent reference to the source js object until
  * ruby object is recycled (then frees it). Note that this ruby object is not meant to be kept alive
  * by the H8 instance, instead, its owner should.
  *
  * Methods of this class do not need the H8::Scope, they create one internally.
  */
-class JsGate {
+class JsGate : public JsValue {
 public:
 	/**
 	 * Used in the ruby allocator. Do not call unless you know what you do.
@@ -133,16 +148,11 @@ public:
 		persistent_value.Reset();
 	}
 
-protected:
-	Local<Value> value() const {
+	virtual Local<Value> value() const {
 		return Local<Value>::New(h8->getIsolate(), persistent_value);
 	}
 
-	Local<Object> object() const {
-		return value()->ToObject();
-	}
-
-	Isolate* isolate() {
+	virtual Isolate* isolate() {
 		return h8->getIsolate();
 	}
 

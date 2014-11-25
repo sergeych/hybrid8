@@ -86,6 +86,11 @@ static VALUE context_eval(VALUE self, VALUE script) {
 	return cxt->eval_to_ruby(StringValueCStr(script));
 }
 
+static VALUE context_set_var(VALUE self, VALUE name,VALUE value) {
+	rc(self)->set_var(name, value);
+	return Qnil;
+}
+
 static void context_free(void* ptr) {
 	delete (H8*) ptr;
 }
@@ -111,6 +116,7 @@ void Init_h8(void) {
 	context_class = rb_define_class_under(h8, "Context", rb_cObject);
 	rb_define_alloc_func(context_class, context_alloc);
 	rb_define_method(context_class, "eval", (ruby_method) context_eval, 1);
+	rb_define_method(context_class, "set_var", (ruby_method) context_set_var, 2);
 
 	value_class = rb_define_class_under(h8, "Value", rb_cObject);
 	rb_define_alloc_func(value_class, rvalue_alloc);
