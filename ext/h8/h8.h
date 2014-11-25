@@ -67,6 +67,10 @@ public:
 		return escape.Escape(result);
 	}
 
+	VALUE eval_to_ruby(const char* script_utf) {
+		return to_ruby(eval(script_utf));
+	}
+
 	Handle<Context> getContext() {
 		return Local<Context>::New(isolate, persistent_context);
 	}
@@ -77,6 +81,10 @@ public:
 
 	Isolate* getIsolate() const {
 		return isolate;
+	}
+
+	VALUE to_ruby(Handle<Value> value) {
+		return JsGate::to_ruby(this, value);
 	}
 
 	virtual ~H8() {
