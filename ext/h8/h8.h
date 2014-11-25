@@ -90,7 +90,12 @@ public:
 	}
 
 private:
+	friend VALUE context_alloc(VALUE klass);
+	friend void rvalue_mark(void* ptr);
+
 	Isolate *isolate;
+	VALUE   self;
+
 	void report_exception(v8::TryCatch& tc) {
 		printf("\n\nERROR: eval failed\n");
 	}

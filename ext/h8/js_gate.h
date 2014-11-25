@@ -62,6 +62,14 @@ public:
 	}
 
 	/**
+	 * Get ruby Float representation (FIXNUM)
+	 */
+	VALUE to_f() {
+		H8::Scope scope(h8);
+        return DBL2NUM(value()->NumberValue());
+	}
+
+	/**
 	 * @return true if the object is a primitive integer
 	 */
 	VALUE is_int() {
@@ -75,6 +83,22 @@ public:
 	VALUE is_float() {
 		H8::Scope scope(h8);
         return value()->IsNumber() ? Qtrue : Qfalse;
+	}
+
+	/**
+	 * @return true if the object is an array
+	 */
+	VALUE is_array() {
+		H8::Scope scope(h8);
+        return value()->IsArray() ? Qtrue : Qfalse;
+	}
+
+	/**
+	 * @return true if the object is an object
+	 */
+	VALUE is_object() {
+		H8::Scope scope(h8);
+        return value()->IsObject() ? Qtrue : Qfalse;
 	}
 
 	/**
@@ -123,6 +147,8 @@ protected:
 	}
 
 private:
+	friend void rvalue_mark(void* ptr);
+
 	H8 *h8=0;
 	Persistent<Value> persistent_value;
 };

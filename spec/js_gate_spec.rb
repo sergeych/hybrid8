@@ -60,6 +60,8 @@ describe 'context' do
   it 'should access arrays' do
     res = H8::Context.eval("[-10, 'foo', 'bar'];")
     res.should_not be_undefined
+    res.array?.should be_true
+    res.length.should == 3
     3.times {
       res[0].to_i.should == -10
       res[1].to_s.should == 'foo'
@@ -67,7 +69,61 @@ describe 'context' do
     }
   end
 
-  it 'should raise error on indexing undefineds'
+  it 'should eval with self adn keep context alive' do
+    pending
+    obj = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
+    GC.start
+    res = obj.eval("this.foo+this.bar;")
+    res.should == 'bar122'
+  end
+
+  it 'should enumerate object key-value pairs' do
+    pending
+    obj = H8::Context.eval("Object.keys({ 'foo': 'bar', 'bar': 122 });")
+    obj.each_key
+    # keys = Set.new
+    # obj.each_key { |k|  keys << k }
+    pending
+  end
+
+  it 'should convert simple types to ruby' do
+    res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122, pi: 3.1415 });")
+    r = res.foo.to_ruby
+    r.should be_kind_of(String)
+    r.should == 'bar'
+
+    r = res.bar.to_ruby
+    r.should be_kind_of(Fixnum)
+    r.should == 122
+
+    r = res.pi.to_ruby
+    r.should be_kind_of(Float)
+    (r == 3.1415).should be_true
+  end
+
+  it 'should convert compare to ruby objects' do
+    res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
+    (res.foo != 'bar').should be_false
+    (res.foo == 'bar').should be_true
+    (res.foo != 'ba1').should be_true
+    (res.foo == 'ba1').should be_false
+
+    (res.bar != 'bar').should be_true
+    (res.bar == 'bar').should be_false
+    (res.bar != 122).should be_false
+    (res.bar == 122).should be_true
+    (res.bar <= 122).should be_true
+    (res.bar <= 123).should be_true
+    (res.bar >= 122).should be_true
+    (res.bar >= 121).should be_true
+
+    (res.bar > 120).should be_true
+    (res.bar < 130).should be_true
+    (res.bar > 129).should be_false
+    (res.bar < 19).should be_false
+  end
+
+  it 'should raise error on indexing non arrays'
   it 'should raise error on accessing fields of undefineds'
 
 end

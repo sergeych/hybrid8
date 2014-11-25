@@ -15,6 +15,11 @@ static void rvalue_free(void* ptr) {
 	delete (JsGate*) ptr;
 }
 
+void h8::rvalue_mark(void* ptr) {
+	JsGate *gate = (JsGate*)ptr;
+	rb_gc_mark(gate->h8->self);
+}
+
 VALUE rvalue_alloc(VALUE klass) {
 	return Data_Wrap_Struct(klass, 0, rvalue_free, new JsGate);
 }
@@ -41,6 +46,10 @@ static VALUE rvalue_is_float(VALUE self) {
 	return rv(self)->is_float();
 }
 
+static VALUE rvalue_to_f(VALUE self) {
+	return rv(self)->to_f();
+}
+
 static VALUE rvalue_is_undefined(VALUE self) {
 	return rv(self)->is_undefined();
 }
@@ -55,6 +64,14 @@ static VALUE rvalue_get_index(VALUE self,VALUE index) {
 
 static VALUE rvalue_is_string(VALUE self) {
 	return rv(self)->is_string();
+}
+
+static VALUE rvalue_is_array(VALUE self) {
+	return rv(self)->is_array();
+}
+
+static VALUE rvalue_is_object(VALUE self) {
+	return rv(self)->is_object();
 }
 
 inline H8* rc(VALUE self) {
@@ -78,8 +95,10 @@ static void context_free(void* ptr) {
 	delete (H8*) ptr;
 }
 
-static VALUE context_alloc(VALUE klass) {
-	return Data_Wrap_Struct(klass, 0, context_free, new H8);
+VALUE h8::context_alloc(VALUE klass) {
+	H8 *h8 = new H8;
+	h8->self = Data_Wrap_Struct(klass, 0, context_free, h8);
+	return h8->self;
 }
 
 void init_v8() {
@@ -102,15 +121,18 @@ void Init_h8(void) {
 	rb_define_alloc_func(value_class, rvalue_alloc);
 	rb_define_method(value_class, "to_s", (ruby_method) rvalue_to_s, 0);
 	rb_define_method(value_class, "to_i", (ruby_method) rvalue_to_i, 0);
+	rb_define_method(value_class, "to_f", (ruby_method) rvalue_to_f, 0);
 	rb_define_method(value_class, "integer?", (ruby_method) rvalue_is_int, 0);
 	rb_define_method(value_class, "float?", (ruby_method) rvalue_is_float, 0);
 	rb_define_method(value_class, "string?", (ruby_method) rvalue_is_string,
 			0);
+	rb_define_method(value_class, "array?", (ruby_method) rvalue_is_array, 0);
+	rb_define_method(value_class, "object?", (ruby_method) rvalue_is_object, 0);
 	rb_define_method(value_class, "undefined?", (ruby_method) rvalue_is_undefined,
 			0);
-	rb_define_method(value_class, "get_attr", (ruby_method) rvalue_get_attr,
+	rb_define_method(value_class, "_get_attr", (ruby_method) rvalue_get_attr,
 			1);
-	rb_define_method(value_class, "get_index", (ruby_method) rvalue_get_index,
+	rb_define_method(value_class, "_get_index", (ruby_method) rvalue_get_index,
 			1);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
