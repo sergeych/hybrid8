@@ -9,10 +9,10 @@ module H8
       "<H8::Value #{to_s}>"
     end
 
-    # Get js object attribute by its name. It always return H8::Value instance, check
-    # it to be undefined? to see if there is such attribute
-    def [] name
-      return get_attr(name)
+    # Get js object attribute by its name or index (should be Fixnum instance). It always
+    # return H8::Value instance, check it to (not) be undefined? to see if there is such attribute
+    def [] name_index
+      name_index.is_a?(Fixnum) ? get_index(name_index) : get_attr(name_index)
     end
 
     # Optimized JS member access. Do not yet support calls!

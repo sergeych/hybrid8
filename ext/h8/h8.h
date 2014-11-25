@@ -83,9 +83,7 @@ public:
 		return isolate;
 	}
 
-	VALUE to_ruby(Handle<Value> value) {
-		return JsGate::to_ruby(this, value);
-	}
+	VALUE to_ruby(Handle<Value> value);
 
 	virtual ~H8() {
 		persistent_context.Reset();
@@ -110,6 +108,11 @@ extern VALUE value_class;
 
 typedef VALUE (*ruby_method)(...);
 
-#include "gate.h"
+#include "js_gate.h"
+
+inline VALUE h8::H8::to_ruby(Handle<Value> value) {
+	return JsGate::to_ruby(this, value);
+}
+
 
 #endif

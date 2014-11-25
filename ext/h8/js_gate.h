@@ -3,6 +3,8 @@
 
 #include "h8.h"
 
+using namespace v8;
+
 namespace h8 {
 
 /**
@@ -83,6 +85,11 @@ public:
 		H8::Scope scope(h8);
 		Local<Value> v8_name = v8::String::NewFromUtf8(isolate(), StringValueCStr(name));
 		return h8->to_ruby(object()->Get(v8_name));
+	}
+
+	VALUE get_index(VALUE index) {
+		H8::Scope scope(h8);
+		return h8->to_ruby(object()->Get(NUM2INT(index)));
 	}
 
 	/**
