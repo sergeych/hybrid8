@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'h8'
 
-describe 'context' do
+describe 'js_gate' do
 
   it 'should return number as string' do
     cxt = H8::Context.new
@@ -77,7 +77,7 @@ describe 'context' do
 
   it 'should convert simple types to ruby' do
     res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122, pi: 3.1415 });")
-    r = res.foo.to_ruby
+    r   = res.foo.to_ruby
     r.should be_kind_of(String)
     r.should == 'bar'
 
@@ -88,6 +88,11 @@ describe 'context' do
     r = res.pi.to_ruby
     r.should be_kind_of(Float)
     (r == 3.1415).should be_true
+  end
+
+  it 'should convert arrays to ruby' do
+    res = H8::Context.eval("[-10, 'foo', 'bar'];")
+    res.to_ruby.should == [-10, 'foo', 'bar']
   end
 
   it 'should convert compare to ruby objects' do

@@ -47,6 +47,10 @@ module H8
           to_s
         when float?
           to_f
+        when array?
+          _get_attr('length').to_i.times.map { |i| _get_index(i).to_ruby }
+        else
+          raise Error, "Dont know how to convert H8::Value"
       end
     end
   end

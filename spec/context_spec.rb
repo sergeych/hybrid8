@@ -18,4 +18,7 @@ describe 'context' do
     cxt.eval("real + one;").should == (101 + 1.21)
   end
 
+  it 'should gate H8::Values back to JS context'
+  it 'should not gate H8::Values between contexts'
+
 end
