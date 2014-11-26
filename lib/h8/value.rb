@@ -2,8 +2,9 @@ module H8
 
   # Wrapper for javascript objects.
   #
-  # Important: when accessin fields of the object, respond_to? will not work due to
-  # js notation, instead, check the returned value to be value.undefined?
+  # Important: when accessing fields of the object, respond_to? will not work due to
+  # js notation, instead, check the returned value (there will be always one) to not to be
+  # value.undefined?
   class Value
 
     include Comparable
@@ -12,14 +13,16 @@ module H8
       "<H8::Value #{to_s}>"
     end
 
-    # Get js object attribute by its name or index (should be Fixnum instance). It always
+    # Get js object attribute by either name or index (should be Fixnum instance). It always
     # return H8::Value instance, check it to (not) be undefined? to see if there is such attribute
+    #
+    # @return [H8::Value] instance, which is .undefined? if does not exist
     def [] name_index
       name_index.is_a?(Fixnum) ? _get_index(name_index) : _get_attr(name_index)
     end
 
-    # Optimized JS member access. Do not yet support calls!
-    # use only to get fields
+    # Optimized JS member access. Support class members and member functions - will call them
+    # automatically. Use val['attr'] to get callable instead
     def method_missing(method_sym, *arguments, &block)
       name = method_sym.to_s
       instance_eval <<-End
@@ -31,33 +34,33 @@ module H8
       send method_sym, *arguments
     end
 
-    # def each_key
-    #   p eval("Object.keys(this)");
-    # end
-    #
-    # def keys
-    #   cxt = self._context
-    #   cxt['__self'] =
-    # end
-
+    # Compare to other object, either usual or another Value instance
     def <=> other
       other = other.to_ruby if other.is_a?(H8::Value)
       to_ruby <=> other
     end
 
+    # Call the value which should be functino() with a given arguments
     def call *args
       _call args
     end
 
-    def apply to, *args
-      _apply to, args
+    # Like JS apply: call the value that should be function() bounded to a given object
+    # @param [Object] this object to bound call to
+    # @param args any arguments
+    # @return [H8::Value] result returned by the function
+    def apply this, *args
+      _apply this, args
     end
 
+    # Tries to convert JS object to ruby array
     def to_ary
       raise Error, 'Is not an array' unless array?
       to_ruby
     end
 
+    # Tries to convert wrapped JS object to ruby primitive (Fixed, String, Float, Array). Hash
+    # is not yet ready!
     def to_ruby
       case
         when integer?
@@ -69,7 +72,7 @@ module H8
         when array?
           _get_attr('length').to_i.times.map { |i| _get_index(i).to_ruby }
         else
-          raise Error, "Dont know how to convert H8::Value"
+          raise Error, "Dont know how to convert #{self}"
       end
     end
   end
