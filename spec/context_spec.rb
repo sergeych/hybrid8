@@ -26,6 +26,14 @@ describe 'context' do
     res.should == 'che bel giorno'
   end
 
-  it 'should not gate H8::Values between contexts'
+  it 'should not gate H8::Values between contexts' do
+    cxt = H8::Context.new
+    obj = cxt.eval "('che bel');"
+    cxt1 = H8::Context.new
+    expect( -> {
+      cxt1[:first] = obj
+      res = cxt1.eval "first + ' giorno';"
+    }).to raise_error(H8::Error)
+  end
 
 end

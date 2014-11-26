@@ -158,6 +158,7 @@ public:
 
 private:
 	friend void rvalue_mark(void* ptr);
+	friend class H8;
 
 	H8 *h8=0;
 	Persistent<Value> persistent_value;
