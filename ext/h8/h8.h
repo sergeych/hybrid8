@@ -12,6 +12,8 @@ extern VALUE h8_exception;
 extern VALUE h8_class;
 extern VALUE value_class;
 
+extern ID id_is_a;
+
 //#include <ruby/thread.h>
 
 namespace h8 {
@@ -105,7 +107,7 @@ public:
 		getContext()->Global()->Set(js(name), to_js(value));
 	}
 
-	Local<Value> to_js(VALUE ruby_value) {
+	Local<Value> to_js(VALUE ruby_value) const {
 		switch( TYPE(ruby_value) ) {
 		case T_STRING:
 			return js(ruby_value);
@@ -113,11 +115,16 @@ public:
 			return v8::Int32::New(isolate, FIX2INT(ruby_value));
 		case T_FLOAT:
 			return v8::Number::New(isolate, NUM2DBL(ruby_value));
+		case T_DATA:
+		case T_OBJECT:
+			return gateObject(ruby_value);
 		default:
-			rb_raise(h8_exception, "unknown type");
-			return Undefined(isolate);
+			rb_raise(h8_exception, "can't gate to js: unknown type");
 		}
+		return Undefined(isolate);
 	}
+
+	Local<Value> gateObject(VALUE object) const;
 
 	virtual ~H8() {
 		persistent_context.Reset();

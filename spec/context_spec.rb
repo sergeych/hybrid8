@@ -18,7 +18,14 @@ describe 'context' do
     cxt.eval("real + one;").should == (101 + 1.21)
   end
 
-  it 'should gate H8::Values back to JS context'
+  it 'should gate H8::Values back to JS context' do
+    cxt = H8::Context.new
+    obj = cxt.eval "('che bel');"
+    cxt[:first] = obj
+    res = cxt.eval "first + ' giorno';"
+    res.should == 'che bel giorno'
+  end
+
   it 'should not gate H8::Values between contexts'
 
 end
