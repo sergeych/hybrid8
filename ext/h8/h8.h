@@ -99,16 +99,16 @@ public:
 	}
 
 	v8::Local<v8::String> js(const char* str) const {
-		return v8::String::NewFromUtf8(isolate,str);
+		return v8::String::NewFromUtf8(isolate, str);
 	}
 
-	void set_var(VALUE name,VALUE value) {
+	void set_var(VALUE name, VALUE value) {
 		Scope scope(this);
 		getContext()->Global()->Set(js(name), to_js(value));
 	}
 
 	Local<Value> to_js(VALUE ruby_value) const {
-		switch( TYPE(ruby_value) ) {
+		switch (TYPE(ruby_value)) {
 		case T_STRING:
 			return js(ruby_value);
 		case T_FIXNUM:
@@ -135,10 +135,10 @@ private:
 	friend void rvalue_mark(void* ptr);
 
 	Isolate *isolate;
-	VALUE   self;
+	VALUE self;
 
 	void report_exception(v8::TryCatch& tc) {
-		printf("\n\nERROR: eval failed\n");
+		rb_raise(h8_exception, "Failed to compile/execute script");
 	}
 
 	Persistent<Context> persistent_context;
@@ -148,7 +148,6 @@ private:
 // Context
 }
 
-
 typedef VALUE (*ruby_method)(...);
 
 #include "js_gate.h"
@@ -156,6 +155,5 @@ typedef VALUE (*ruby_method)(...);
 inline VALUE h8::H8::to_ruby(Handle<Value> value) {
 	return JsGate::to_ruby(this, value);
 }
-
 
 #endif

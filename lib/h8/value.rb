@@ -24,7 +24,8 @@ module H8
       name = method_sym.to_s
       instance_eval <<-End
               def #{name} *args, **kwargs
-                _get_attr('#{name}')
+                res = _get_attr('#{name}')
+                res.function? ? res.apply(res,*args) : res
               end
       End
       send method_sym, *arguments
@@ -42,6 +43,14 @@ module H8
     def <=> other
       other = other.to_ruby if other.is_a?(H8::Value)
       to_ruby <=> other
+    end
+
+    def call *args
+      _call args
+    end
+
+    def apply to, *args
+      _apply to, args
     end
 
     def to_ary

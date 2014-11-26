@@ -139,13 +139,36 @@ public:
         return value()->IsString() ? Qtrue : Qfalse;
 	}
 
+	VALUE is_function() {
+		H8::Scope scope(h8);
+		return value()->IsFunction();
+	}
+
 	VALUE is_undefined() {
 		H8::Scope scope(h8);
 		return value()->IsUndefined() ? Qtrue : Qfalse;
 	}
 
-	~JsGate() {
-		persistent_value.Reset();
+	VALUE call(VALUE args) const {
+		v8::HandleScope scope(h8->getIsolate());
+		return apply(h8->getContext()->Global(), args);
+	}
+
+	VALUE apply(VALUE self, VALUE args) const {
+		v8::HandleScope scope(h8->getIsolate());
+		return apply(h8->gateObject(self), args);
+	}
+
+	VALUE apply(Local<Value> self, VALUE args) const {
+		H8::Scope scope(h8);
+		long count = RARRAY_LEN(args);
+		Local<Value> *js_args = new Local<Value>[count];
+		for (int i = 0; i < count; i++) {
+			js_args[i] = h8->to_js(rb_ary_entry(args, i));
+		}
+		Local<Value> result = object()->CallAsFunction(self, count, js_args);
+		delete[] js_args;
+		return h8->to_ruby(result);
 	}
 
 	virtual Local<Value> value() const {
@@ -154,6 +177,10 @@ public:
 
 	virtual Isolate* isolate() {
 		return h8->getIsolate();
+	}
+
+	~JsGate() {
+		persistent_value.Reset();
 	}
 
 private:

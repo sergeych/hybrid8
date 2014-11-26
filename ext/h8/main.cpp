@@ -76,6 +76,20 @@ static VALUE rvalue_is_object(VALUE self) {
 	return rv(self)->is_object();
 }
 
+static VALUE rvalue_is_function(VALUE self) {
+	return rv(self)->is_function();
+}
+
+static VALUE rvalue_call(VALUE self, VALUE args) {
+	return rv(self)->call(args);
+}
+
+static VALUE rvalue_apply(VALUE self, VALUE to,VALUE args) {
+	return rv(self)->apply(to,args);
+}
+
+//------------ context ----------------------------------------------------------------
+
 inline H8* rc(VALUE self) {
 	H8 *prcxt;
 	Data_Get_Struct(self, H8, prcxt);
@@ -133,12 +147,15 @@ void Init_h8(void) {
 			0);
 	rb_define_method(value_class, "array?", (ruby_method) rvalue_is_array, 0);
 	rb_define_method(value_class, "object?", (ruby_method) rvalue_is_object, 0);
+	rb_define_method(value_class, "function?", (ruby_method) rvalue_is_function, 0);
 	rb_define_method(value_class, "undefined?", (ruby_method) rvalue_is_undefined,
 			0);
 	rb_define_method(value_class, "_get_attr", (ruby_method) rvalue_get_attr,
 			1);
 	rb_define_method(value_class, "_get_index", (ruby_method) rvalue_get_index,
 			1);
+	rb_define_method(value_class, "_call", (ruby_method) rvalue_call, 1);
+	rb_define_method(value_class, "_apply", (ruby_method) rvalue_apply, 2);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 

@@ -125,7 +125,38 @@ describe 'js_gate' do
     (res.bar < 19).should be_false
   end
 
-  it 'should raise error on indexing non arrays'
-  it 'should raise error on accessing fields of undefineds'
+  it 'should call functions with no args' do
+    res = H8::Context.eval "(function() { return 'sono callable'; });"
+    res.call('a', '1', '2').should == 'sono callable'
+  end
+
+  it 'should call functions with args' do
+    res = H8::Context.eval "(function(a, b) { return a + b; });"
+    res.call('10', '1').should == '101'
+    res.call(10, 1).should == 11
+  end
+
+  it 'should raise error on syntax' do
+    expect( -> {
+      H8::Context.eval 'this is not a valid js'
+    }).to raise_error(H8::Error)
+  end
+
+  it 'should call member functions only' do
+    res = H8::Context.eval <<-End
+      function cls(base) {
+        this.base = base;
+        this.someVal = 'hello!';
+        this.noArgs = function() { return 'world!'};
+        this.doAdd = function(a, b) {
+          return a + b + base;
+        }
+      }
+      new cls(100);
+    End
+    res.someVal.should == 'hello!'
+    res.noArgs.should == 'world!'
+    res.doAdd(10, 1).should == 111
+  end
 
 end
