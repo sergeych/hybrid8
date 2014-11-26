@@ -108,7 +108,6 @@ describe 'js_gate' do
     obj.to_ruby.should == { "foo" => "bar", "bar" => 122 }
 
     Set.new(obj.each_key).should == Set.new(['foo', 'bar'])
-    p obj.values
     Set.new(obj.values.map(&:to_ruby)).should == Set.new(['bar', 122])
     Set.new(obj.each_value.map(&:to_ruby)).should == Set.new(['bar', 122])
   end
