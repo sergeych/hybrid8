@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'h8'
+require 'weakref'
 
 describe 'js_gate' do
 
@@ -70,8 +71,12 @@ describe 'js_gate' do
   end
 
   it 'should eval and keep context alive' do
-    obj = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
-    GC.start # Here Context of obj that is not referenced should be kept
+    cxt = H8::Context.new
+    wr = WeakRef.new cxt
+    obj = cxt.eval("({ 'foo': 'bar', 'bar': 122 });")
+    cxt = nil
+    GC.start # cxt is now kept only by H8::Value obj
+    wr.weakref_alive?.should be_true
     obj.foo.should == 'bar'
   end
 
