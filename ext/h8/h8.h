@@ -126,13 +126,16 @@ public:
 
 	Local<Value> gateObject(VALUE object) const;
 
+	VALUE ruby_context() const {
+		return self;
+	}
+
 	virtual ~H8() {
 		persistent_context.Reset();
 	}
 
 private:
 	friend VALUE context_alloc(VALUE klass);
-	friend void rvalue_mark(void* ptr);
 
 	Isolate *isolate;
 	VALUE self;

@@ -98,9 +98,19 @@ describe 'js_gate' do
   end
 
   it 'should provide hash methods' do
-    pending
     obj = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
-    obj.keys.should == ['foo', 'bar']
+    obj.keys.should == Set.new(['foo', 'bar'])
+
+    hash = {}
+    obj.each { |k,v| hash[k] = v.to_ruby }
+    hash.should == { "foo" => "bar", "bar" => 122 }
+    obj.to_h.should == { "foo" => "bar", "bar" => 122 }
+    obj.to_ruby.should == { "foo" => "bar", "bar" => 122 }
+
+    Set.new(obj.each_key).should == Set.new(['foo', 'bar'])
+    p obj.values
+    Set.new(obj.values.map(&:to_ruby)).should == Set.new(['bar', 122])
+    Set.new(obj.each_value.map(&:to_ruby)).should == Set.new(['bar', 122])
   end
 
   it 'should convert compare to ruby objects' do

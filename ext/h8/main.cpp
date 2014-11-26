@@ -17,13 +17,13 @@ static void rvalue_free(void* ptr) {
 	delete (JsGate*) ptr;
 }
 
-void h8::rvalue_mark(void* ptr) {
+static void rvalue_mark(void* ptr) {
 	JsGate *gate = (JsGate*)ptr;
-	rb_gc_mark(gate->h8->self);
+	rb_gc_mark(gate->ruby_context());
 }
 
 VALUE rvalue_alloc(VALUE klass) {
-	return Data_Wrap_Struct(klass, h8::rvalue_mark, rvalue_free, new JsGate);
+	return Data_Wrap_Struct(klass, rvalue_mark, rvalue_free, new JsGate);
 }
 
 inline JsGate* rv(VALUE self) {
@@ -86,6 +86,10 @@ static VALUE rvalue_call(VALUE self, VALUE args) {
 
 static VALUE rvalue_apply(VALUE self, VALUE to,VALUE args) {
 	return rv(self)->apply(to,args);
+}
+
+static VALUE rvalue_get_ruby_context(VALUE self) {
+	return rv(self)->ruby_context();
 }
 
 //------------ context ----------------------------------------------------------------
@@ -156,6 +160,7 @@ void Init_h8(void) {
 			1);
 	rb_define_method(value_class, "_call", (ruby_method) rvalue_call, 1);
 	rb_define_method(value_class, "_apply", (ruby_method) rvalue_apply, 2);
+	rb_define_method(value_class, "context", (ruby_method) rvalue_get_ruby_context, 0);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 

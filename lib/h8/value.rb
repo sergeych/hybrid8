@@ -5,6 +5,11 @@ module H8
   # Important: when accessing fields of the object, respond_to? will not work due to
   # js notation, instead, check the returned value (there will be always one) to not to be
   # value.undefined?
+  #
+  # Precaution! Values are always bounded to the context where they are created. You can not
+  # pass values between context, as they often map native Javascript objects. If you need, you
+  # can copy, for example, by converting it H8::Value#to_ruby first. Another approach is to
+  # use JSON serialization from the script.
   class Value
 
     include Comparable
@@ -62,8 +67,43 @@ module H8
       to_ruby
     end
 
-    # Tries to convert wrapped JS object to ruby primitive (Fixed, String, Float, Array). Hash
-    # is not yet ready!
+    alias :to_a :to_ary
+
+    # Generate set of keys of the wrapped object
+    def keys
+      context[:__obj] = self
+      Set.new context.eval("(Object.keys(__obj));").to_a
+    end
+
+    # enumerate |key, value| pairs for javascript object attributes
+    def each
+      return enum_for(:each) unless block_given? # Sparkling magic!
+      keys.each { |k|
+        yield k, _get_attr(k)
+      }
+    end
+
+    # Try to convert javascript object to a ruby hash
+    def to_h
+      each.reduce({}) { |all, kv| all[kv[0]] = kv[1].to_ruby; all }
+    end
+
+    # Iterate over javascript object keys
+    def each_key
+      keys.each
+    end
+
+    # @return [Array] values array. does NOT convert values to_ruby()
+    def values
+      each.reduce([]) { |all, kv| all << kv[1]; all }
+    end
+
+    # iterate over values of the javascript object attributes
+    def each_value
+      values.each
+    end
+
+    # Tries to convert wrapped JS object to ruby primitive (Fixed, String, Float, Array, Hash)
     def to_ruby
       case
         when integer?
@@ -74,6 +114,8 @@ module H8
           to_f
         when array?
           _get_attr('length').to_i.times.map { |i| _get_index(i).to_ruby }
+        when object?
+          to_h
         else
           raise Error, "Dont know how to convert #{self}"
       end
@@ -98,6 +140,10 @@ module H8
     end
 
     def array? # native method. stub for documentation
+    end
+
+    # @return [H8::Context] context to which this value is bounded
+    def context # native method. stub for documentation
     end
   end
 

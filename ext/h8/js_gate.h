@@ -159,6 +159,10 @@ public:
 		return apply(h8->gateObject(self), args);
 	}
 
+	VALUE ruby_context() const {
+		return h8->ruby_context();
+	}
+
 	VALUE apply(Local<Value> self, VALUE args) const {
 		H8::Scope scope(h8);
 		long count = RARRAY_LEN(args);
