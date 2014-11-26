@@ -34,13 +34,15 @@ module H8
       send method_sym, *arguments
     end
 
-    # Compare to other object, either usual or another Value instance
+    # Compare to other object, either usual or another Value instance. Does its best.
     def <=> other
       other = other.to_ruby if other.is_a?(H8::Value)
       to_ruby <=> other
     end
 
-    # Call the value which should be functino() with a given arguments
+    # Call javascript function represented by this instance (which should be function())
+    # with given (or no) arguments.
+    # @return [H8::Value] function return which might be undefined
     def call *args
       _call args
     end
@@ -48,12 +50,13 @@ module H8
     # Like JS apply: call the value that should be function() bounded to a given object
     # @param [Object] this object to bound call to
     # @param args any arguments
-    # @return [H8::Value] result returned by the function
+    # @return [H8::Value] result returned by the function which might be undefined
     def apply this, *args
       _apply this, args
     end
 
     # Tries to convert JS object to ruby array
+    # @raise H8::Error if the JS object is not an array
     def to_ary
       raise Error, 'Is not an array' unless array?
       to_ruby
@@ -74,6 +77,27 @@ module H8
         else
           raise Error, "Dont know how to convert #{self}"
       end
+    end
+
+    def integer? # native method. stub for documentation
+    end
+
+    def float? # native method. stub for documentation
+    end
+
+    def string? # native method. stub for documentation
+    end
+
+    def function? # native method. stub for documentation
+    end
+
+    def object? # native method. stub for documentation
+    end
+
+    def undefined? # native method. stub for documentation
+    end
+
+    def array? # native method. stub for documentation
     end
   end
 
