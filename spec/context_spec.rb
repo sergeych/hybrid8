@@ -5,7 +5,9 @@ describe 'context' do
 
   it 'should create' do
     cxt = H8::Context.new
-    cxt.eval("'Res: ' + (2+5);")
+    cxt[:one] = 1
+    cxt.eval("");
+    # cxt.eval("'Res: ' + (2+5);")
   end
 
   it 'should gate simple values to JS context' do

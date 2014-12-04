@@ -18,6 +18,8 @@ extern ID id_is_a;
 
 namespace h8 {
 
+class RubyGate;
+
 template<class T> inline void t(const T& x) {
 	cout << x << endl << flush;
 }
@@ -29,6 +31,7 @@ public:
 		v8::Isolate::Scope isolate_scope;
 		v8::Context::Scope context_scope;
 		H8* rcontext;
+
 	public:
 		Scope(H8* cxt) :
 				HandleScope(cxt->getIsolate()), isolate_scope(
@@ -39,7 +42,7 @@ public:
 
 	static void init();
 
-	H8() {
+	H8() : gates_head(0), self(Qnil) {
 		isolate = Isolate::New();
 		Isolate::Scope isolate_scope(isolate);
 		HandleScope handle_scope(isolate);
@@ -107,7 +110,7 @@ public:
 		getContext()->Global()->Set(js(name), to_js(value));
 	}
 
-	Local<Value> to_js(VALUE ruby_value) const {
+	Local<Value> to_js(VALUE ruby_value) {
 		switch (TYPE(ruby_value)) {
 		case T_STRING:
 			return js(ruby_value);
@@ -124,15 +127,17 @@ public:
 		return Undefined(isolate);
 	}
 
-	Local<Value> gateObject(VALUE object) const;
+	Local<Value> gateObject(VALUE object);
 
 	VALUE ruby_context() const {
 		return self;
 	}
 
-	virtual ~H8() {
-		persistent_context.Reset();
-	}
+	void add_gate(RubyGate *gate);
+	void remove_gate(RubyGate *gate);
+	void ruby_mark_gc() const;
+
+	virtual ~H8();
 
 private:
 	friend VALUE context_alloc(VALUE klass);
@@ -147,6 +152,8 @@ private:
 	Persistent<Context> persistent_context;
 
 	bool is_error = false;
+
+	RubyGate* gates_head;
 };
 // Context
 }

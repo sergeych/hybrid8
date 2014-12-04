@@ -115,9 +115,15 @@ static void context_free(void* ptr) {
 	delete (H8*) ptr;
 }
 
+static void context_mark(void* ptr) {
+	H8* h8 = (H8*) ptr;
+	h8->ruby_mark_gc();
+}
+
+
 VALUE h8::context_alloc(VALUE klass) {
 	H8 *h8 = new H8;
-	h8->self = Data_Wrap_Struct(klass, 0, context_free, h8);
+	h8->self = Data_Wrap_Struct(klass, context_mark, context_free, h8);
 	return h8->self;
 }
 

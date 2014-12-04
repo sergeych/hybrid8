@@ -5,7 +5,7 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
+  # config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 
@@ -14,4 +14,34 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = 'random'
+
+  config.expect_with :rspec do |expectations|
+    # This option will default to `true` in RSpec 4. It makes the `description`
+    # and `failure_message` of custom matchers include text for helper methods
+    # defined using `chain`, e.g.:
+    # be_bigger_than(2).and_smaller_than(4).description
+    #   # => "be bigger than 2 and smaller than 4"
+    # ...rather than:
+    #   # => "be bigger than 2"
+    expectations.syntax                                               = [:should, :expect]
+    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
 end
+
+def true.true?
+  true
+end
+
+def true.false?
+  false
+end
+
+def false.true?
+  false
+end
+
+def false.false?
+  true
+end
+
