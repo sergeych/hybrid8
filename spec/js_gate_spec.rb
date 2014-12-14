@@ -19,26 +19,20 @@ describe 'js_gate' do
     res.should_not be_integer
     res = cxt.eval("11+22;")
     res.to_i.should == 33
-    res.should be_integer
-    res.should be_float
-    res.should_not be_string
+    res.should be_kind_of(Fixnum)
   end
 
   it 'should return floats' do
     cxt = H8::Context.new
     res = cxt.eval("0.2 + 122.1;")
     res.to_s.should == '122.3'
-    res.should be_float
-    res.should_not be_integer
-    res.should_not be_string
+    res.should be_kind_of(Float)
   end
 
   it 'should return strings' do
     res = H8::Context.eval("'hel' + 'lo';")
     res.to_s.should == 'hello'
-    res.should be_string
-    res.should_not be_integer
-    res.should_not be_float
+    res.should be_kind_of(String)
   end
 
   it 'should retreive JS fieds as indexes' do
@@ -99,7 +93,6 @@ describe 'js_gate' do
     res = H8::Context.eval("[-10, 'foo', 'bar'];")
     res.to_ruby.should == [-10, 'foo', 'bar']
     res.to_ary.should == [-10, 'foo', 'bar']
-    expect(-> { H8::Context.eval("'not array'").to_ary}).to raise_error(H8::Error)
   end
 
   it 'should provide hash methods' do

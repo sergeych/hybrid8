@@ -33,7 +33,7 @@ module H8
       instance_eval <<-End
               def #{name} *args, **kwargs
                 res = _get_attr('#{name}')
-                res.function? ? res.apply(res,*args) : res
+                (res.is_a?(H8::Value) && res.function?) ? res.apply(res,*args) : res
               end
       End
       send method_sym, *arguments
@@ -121,15 +121,6 @@ module H8
       end
     end
 
-    def integer? # native method. stub for documentation
-    end
-
-    def float? # native method. stub for documentation
-    end
-
-    def string? # native method. stub for documentation
-    end
-
     def function? # native method. stub for documentation
     end
 
@@ -148,3 +139,13 @@ module H8
   end
 
 end
+
+# Ruby object's t_ruby does nothing (tree conversion optimization)
+class Object
+  # It is already a ruby object. Gate objects should override
+  # as need
+  def to_ruby
+    self
+  end
+end
+

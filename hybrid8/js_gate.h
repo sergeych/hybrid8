@@ -19,9 +19,8 @@ public:
 	}
 
 	virtual Isolate* isolate() = 0;
-	virtual ~JsValue() {
-	}
 };
+
 
 /**
  * Gates JS object to ruby environment. Holds persistent reference to the source js object until
@@ -30,7 +29,7 @@ public:
  *
  * Methods of this class do not need the H8::Scope, they create one internally.
  */
-class JsGate: public JsValue {
+class JsGate : public JsValue {
 public:
 	/**
 	 * Used in the ruby allocator. Do not call unless you know what you do.
@@ -42,26 +41,13 @@ public:
 	 * Return Ruby object that gates specified Handled javascript object. Ruby object
 	 * locks permanently value until get recycled.
 	 */
-	template<class T>
+	template <class T>
 	static VALUE to_ruby(H8* h8, const Handle<T>& value) {
-		// Convert primitives
-		Local<Value> v = value;
-		if( v->IsString() ) {
-			H8::Scope scope(h8);
-			String::Utf8Value res(v);
-			return *res ? rb_str_new2(*res) : Qnil;
-		}
-		if( v->IsInt32() ) {
-			return INT2FIX(v->Int32Value());
-		}
-		if( v->IsNumber() ) {
-			return DBL2NUM(v->NumberValue());
-		}
-		JsGate *gate;
-		VALUE ruby_gate = rb_class_new_instance(0, NULL, value_class);
-		Data_Get_Struct(ruby_gate, JsGate, gate);
-		gate->set(h8, value);
-		return ruby_gate;
+	    JsGate *gate;
+	    VALUE ruby_gate = rb_class_new_instance(0, NULL, value_class);
+	    Data_Get_Struct(ruby_gate, JsGate, gate);
+	    gate->set(h8, value);
+	    return ruby_gate;
 	}
 
 	/**
@@ -87,7 +73,7 @@ public:
 	 */
 	VALUE to_i() {
 		H8::Scope scope(h8);
-		return INT2FIX(value()->IntegerValue());
+        return INT2FIX(value()->IntegerValue());
 	}
 
 	/**
@@ -95,7 +81,7 @@ public:
 	 */
 	VALUE to_f() {
 		H8::Scope scope(h8);
-		return DBL2NUM(value()->NumberValue());
+        return DBL2NUM(value()->NumberValue());
 	}
 
 	/**
@@ -103,7 +89,7 @@ public:
 	 */
 	VALUE is_int() {
 		H8::Scope scope(h8);
-		return value()->IsInt32() ? Qtrue : Qfalse;
+        return value()->IsInt32() ? Qtrue : Qfalse;
 	}
 
 	/**
@@ -111,7 +97,7 @@ public:
 	 */
 	VALUE is_float() {
 		H8::Scope scope(h8);
-		return value()->IsNumber() ? Qtrue : Qfalse;
+        return value()->IsNumber() ? Qtrue : Qfalse;
 	}
 
 	/**
@@ -119,7 +105,7 @@ public:
 	 */
 	VALUE is_array() {
 		H8::Scope scope(h8);
-		return value()->IsArray() ? Qtrue : Qfalse;
+        return value()->IsArray() ? Qtrue : Qfalse;
 	}
 
 	/**
@@ -127,7 +113,7 @@ public:
 	 */
 	VALUE is_object() {
 		H8::Scope scope(h8);
-		return value()->IsObject() ? Qtrue : Qfalse;
+        return value()->IsObject() ? Qtrue : Qfalse;
 	}
 
 	/**
@@ -136,8 +122,7 @@ public:
 	 */
 	VALUE get_attribute(VALUE name) {
 		H8::Scope scope(h8);
-		Local<Value> v8_name = v8::String::NewFromUtf8(isolate(),
-				StringValueCStr(name));
+		Local<Value> v8_name = v8::String::NewFromUtf8(isolate(), StringValueCStr(name));
 		return h8->to_ruby(object()->Get(v8_name));
 	}
 
@@ -151,7 +136,7 @@ public:
 	 */
 	VALUE is_string() {
 		H8::Scope scope(h8);
-		return value()->IsString() ? Qtrue : Qfalse;
+        return value()->IsString() ? Qtrue : Qfalse;
 	}
 
 	VALUE is_function() {
@@ -181,7 +166,7 @@ public:
 	VALUE apply(Local<Value> self, VALUE args) const {
 		H8::Scope scope(h8);
 		long count = RARRAY_LEN(args);
-		Local<Value> *js_args = new Local<Value> [count];
+		Local<Value> *js_args = new Local<Value>[count];
 		for (int i = 0; i < count; i++) {
 			js_args[i] = h8->to_js(rb_ary_entry(args, i));
 		}
@@ -206,7 +191,7 @@ private:
 	friend void rvalue_mark(void* ptr);
 	friend class H8;
 
-	H8 *h8 = 0;
+	H8 *h8=0;
 	Persistent<Value> persistent_value;
 };
 

@@ -30,11 +30,16 @@ describe 'context' do
 
   it 'should not gate H8::Values between contexts' do
     cxt = H8::Context.new
-    obj = cxt.eval "('che bel');"
+    obj = cxt.eval "({res: 'che bel'});"
+    # This should be ok
+    cxt[:first] = obj
+    res = cxt.eval "first.res + ' giorno';"
+    res.should == 'che bel giorno'
+    # And that should fail
     cxt1 = H8::Context.new
     expect( -> {
       cxt1[:first] = obj
-      res = cxt1.eval "first + ' giorno';"
+      res = cxt1.eval "first.res + ' giorno';"
     }).to raise_error(H8::Error)
   end
 

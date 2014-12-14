@@ -6,7 +6,7 @@ describe 'ruby gate' do
   it 'should gate callables' do
     cxt = H8::Context.new
     cxt[:fn] = -> (a, b) {
-      a.to_i + b.to_i
+      a + b
     }
 
     res = cxt.eval "fn(11, 22);"
