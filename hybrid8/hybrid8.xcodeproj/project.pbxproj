@@ -6,29 +6,10 @@
 	objectVersion = 46;
 	objects = {
 
-/* Begin PBXFileReference section */
-		1D1BB4881A3D909800F6C6D3 /* extconf.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; path = extconf.rb; sourceTree = "<group>"; };
-		1D1BB4891A3D909800F6C6D3 /* h8.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = h8.cpp; sourceTree = "<group>"; };
-		1D1BB48A1A3D909800F6C6D3 /* h8.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = h8.h; sourceTree = "<group>"; };
-		1D1BB48B1A3D909800F6C6D3 /* js_gate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = js_gate.h; sourceTree = "<group>"; };
-		1D1BB48C1A3D909800F6C6D3 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		1D1BB48D1A3D909800F6C6D3 /* object_wrap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object_wrap.h; sourceTree = "<group>"; };
-		1D1BB48E1A3D909800F6C6D3 /* ruby_gate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ruby_gate.cpp; sourceTree = "<group>"; };
-		1D1BB48F1A3D909800F6C6D3 /* ruby_gate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ruby_gate.h; sourceTree = "<group>"; };
-/* End PBXFileReference section */
-
 /* Begin PBXGroup section */
 		1D1BB4811A3D907D00F6C6D3 = {
 			isa = PBXGroup;
 			children = (
-				1D1BB4881A3D909800F6C6D3 /* extconf.rb */,
-				1D1BB4891A3D909800F6C6D3 /* h8.cpp */,
-				1D1BB48A1A3D909800F6C6D3 /* h8.h */,
-				1D1BB48B1A3D909800F6C6D3 /* js_gate.h */,
-				1D1BB48C1A3D909800F6C6D3 /* main.cpp */,
-				1D1BB48D1A3D909800F6C6D3 /* object_wrap.h */,
-				1D1BB48E1A3D909800F6C6D3 /* ruby_gate.cpp */,
-				1D1BB48F1A3D909800F6C6D3 /* ruby_gate.h */,
 			);
 			sourceTree = "<group>";
 		};

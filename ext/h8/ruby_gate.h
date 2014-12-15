@@ -6,6 +6,7 @@
 
 namespace h8 {
 
+
 	/**
 	 * Gate a generic ruby object to Javascript context and retain it for
 	 * the lidetime of the javascript object
