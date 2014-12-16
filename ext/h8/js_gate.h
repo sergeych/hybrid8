@@ -11,7 +11,7 @@ namespace h8 {
 /**
  * Interface to anything that could be converted to a Javascipt object. Provides common helpers.
  */
-class JsValue : public AllocatedResource {
+class JsValue: public AllocatedResource {
 public:
 	virtual Local<Value> value() const = 0;
 
@@ -47,15 +47,15 @@ public:
 	static VALUE to_ruby(H8* h8, const Handle<T>& value) {
 		// Convert primitives
 		Local<Value> v = value;
-		if( v->IsString() ) {
+		if (v->IsString()) {
 			H8::Scope scope(h8);
 			String::Utf8Value res(v);
 			return *res ? rb_str_new2(*res) : Qnil;
 		}
-		if( v->IsInt32() ) {
+		if (v->IsInt32()) {
 			return INT2FIX(v->Int32Value());
 		}
-		if( v->IsNumber() ) {
+		if (v->IsNumber()) {
 			return DBL2NUM(v->NumberValue());
 		}
 		JsGate *gate;

@@ -25,6 +25,28 @@ template<class T> inline void t(const T& x) {
 	cout << x << endl << flush;
 }
 
+/**
+ * The exception that is raised toward ruby code, e.g. when JS code throws uncaught exception,
+ * interpreter fails to cope with syntax, parameters are used in a wrong way, etc. Instead of calling
+ * rb_raise() which will longjump() over all your C++ code, throw instance of JsError.
+ */
+class JsError : public std::exception {
+public:
+	JsError(const char* str_reason) {
+		reason = str_reason;
+	}
+
+	/**
+	 * Call it with a proper exception class and be careful - after this call no code will be executed!
+	 */
+	void raise(VALUE exception_class) {
+		rb_raise(exception_class, reason);
+	}
+
+protected:
+	const char* reason;
+};
+
 class H8 {
 public:
 

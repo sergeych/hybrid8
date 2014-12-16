@@ -107,7 +107,14 @@ static VALUE context_eval(VALUE self, VALUE script) {
 }
 
 static VALUE context_set_var(VALUE self, VALUE name,VALUE value) {
-	rc(self)->set_var(name, value);
+	try {
+		rc(self)->set_var(name, value);
+		return Qnil;
+	}
+	catch(JsError& e) {
+		e.raise(h8_exception);
+	}
+	// It will never be there...
 	return Qnil;
 }
 
