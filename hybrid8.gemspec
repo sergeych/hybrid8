@@ -1,6 +1,7 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
 require 'h8/version'
 require "rake/extensiontask"
 require 'rubygems/package_task'
@@ -11,7 +12,7 @@ spec = Gem::Specification.new do |spec|
   spec.authors       = ["sergeych"]
   spec.email         = ["real.sergeych@gmail.com"]
   spec.summary       = %q{Minimalistic and sane v8 bindings}
-  spec.description   = %q{Should be more or less replacement for broken therubyracer gem and riny 2.1+ }
+  spec.description   = %q{Should be more or less replacement for broken therubyracer gem and ruby 2.1+ }
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -42,3 +43,4 @@ Rake::ExtensionTask.new "h8", spec do |ext|
 end
 
 spec
+

@@ -20,3 +20,9 @@ tmp
 *.o
 *.a
 mkmf.log
+.cproject
+.project
+.DS_Store
+.idea
+.ruby-version
+

@@ -16,7 +16,6 @@
 
 require "mkmf"
 
-
 abort 'missing malloc()' unless have_func 'malloc'
 abort 'missing free()' unless have_func 'free'
 
@@ -34,24 +33,24 @@ unless have_header('include/v8.h')
 end
 
 unless have_library('v8_base') && have_library('v8_snapshot') && have_library('v8_libplatform') \
-  && have_library('v8_libbase') && have_library('icuuc') && have_library('icudata')
+&& have_library('v8_libbase') && have_library('icuuc') && have_library('icudata')
   $stderr.puts "can't find libv8"
   ok = false
 end
 
-
 # This test is actually due to a Clang 3.3 shortcoming, included in OS X 10.9,
 # fixed in Clang 3.4:
 # http://llvm.org/releases/3.4/tools/clang/docs/ReleaseNotes.html#new-compiler-flags
-if try_compile('', '-O6')
-  $CFLAGS += ' -Wall -W -O6 -g'
-else
-  $CFLAGS += ' -Wall -W -O3 -g'
-end
+# if try_compile('', '-O6')
+#   $CFLAGS += ' -Wall -W -O6 -g'
+# else
+#   $CFLAGS += ' -Wall -W -O3 -g'
+# end
 
-CONFIG['CXXFLAGS'] += " --std=c++11"
+$CXXFLAGS += ' --std=c++11'
 
 if ok
+  # create_makefile('h8/h8')
   create_makefile(extension_name)
 else
   $stderr.puts "*********************************************************************"
@@ -77,5 +76,4 @@ end
 #
 # Libv8.configure_makefile
 
-create_makefile('h8/h8')
 

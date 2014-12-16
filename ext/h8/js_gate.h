@@ -2,15 +2,22 @@
 #define __js_gate_h
 
 #include "h8.h"
+#include "chain.h"
 
 using namespace v8;
 
 namespace h8 {
 
+class AllocatedResource : public chain::link {
+public:
+	virtual void rb_mark_gc() {};
+	virtual ~AllocatedResource() {};
+};
+
 /**
  * Interface to anything that could be converted to a Javascipt object. Provides common helpers.
  */
-class JsValue {
+class JsValue : public AllocatedResource {
 public:
 	virtual Local<Value> value() const = 0;
 
