@@ -2,17 +2,11 @@
 #define __js_gate_h
 
 #include "h8.h"
-#include "chain.h"
+#include "allocated_resource.h"
 
 using namespace v8;
 
 namespace h8 {
-
-class AllocatedResource : public chain::link {
-public:
-	virtual void rb_mark_gc() {};
-	virtual ~AllocatedResource() {};
-};
 
 /**
  * Interface to anything that could be converted to a Javascipt object. Provides common helpers.
@@ -78,6 +72,7 @@ public:
 	void set(H8 *h8, const Handle<T>& val) {
 		this->h8 = h8;
 		persistent_value.Reset(h8->getIsolate(), val);
+		h8->add_resource(this);
 	}
 
 	/**
@@ -197,6 +192,12 @@ public:
 		return h8->to_ruby(result);
 	}
 
+	virtual void free() {
+		t("Freeing JS gate");
+		persistent_value.Reset();
+		AllocatedResource::free();
+	}
+
 	virtual Local<Value> value() const {
 		return Local<Value>::New(h8->getIsolate(), persistent_value);
 	}
@@ -206,6 +207,7 @@ public:
 	}
 
 	virtual ~JsGate() {
+		t("~JSG");
 		persistent_value.Reset();
 	}
 

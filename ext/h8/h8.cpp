@@ -13,39 +13,24 @@ Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 	}
 	// Generic Ruby object
 	RubyGate *gate = new RubyGate(this, ruby_value);
-//	printf("Creating gate\n");
-//	rb_raise(h8_exception, "Object gate is not implemented");
 	return gate->handle(isolate);
 }
 
-void h8::H8::add_gate(RubyGate* gate) {
-	// TODO: lock here!
-	gate->prev = 0;
-	gate->next = gates_head;
-	gates_head = gate;
-}
-
-void h8::H8::remove_gate(RubyGate *gate) {
-	// TODO: Lock here!
-	if (gate->next) {
-		gate->next->prev = gate->prev;
-	}
-	if (gate->prev) {
-		gate->prev->next = gate->next;
-	} else {
-		// First item in the list
-		gates_head = gate->next;
-	}
-}
-
 void h8::H8::ruby_mark_gc() const {
-	for (RubyGate* rg = gates_head; rg; rg = rg->next)
-		rb_gc_mark(rg->ruby_object);
+	for(chain::link *x: resources)
+		((AllocatedResource*)x)->rb_mark_gc();
 }
 
 h8::H8::~H8() {
-//	t("destructing");
+	t("destructing H8!");
+
+	while( !resources.is_empty() ) {
+		t("resource found");
+		// this should also remove it from the list:
+		resources.peek_first<AllocatedResource>()->free();
+	}
+
 	persistent_context.Reset();
 	// TODO: free isolate!
-//	isolate->Dispose();
+	isolate->Dispose();
 }

@@ -4,6 +4,7 @@
 #include <include/v8.h>
 #include <ruby.h>
 #include <iostream>
+#include "allocated_resource.h"
 
 using namespace v8;
 using namespace std;
@@ -42,7 +43,7 @@ public:
 
 	static void init();
 
-	H8() : gates_head(0), self(Qnil) {
+	H8() : self(Qnil) {
 		isolate = Isolate::New();
 		Isolate::Scope isolate_scope(isolate);
 		HandleScope handle_scope(isolate);
@@ -133,8 +134,10 @@ public:
 		return self;
 	}
 
-	void add_gate(RubyGate *gate);
-	void remove_gate(RubyGate *gate);
+	void add_resource(AllocatedResource *resource) {
+		resources.push(resource);
+	}
+
 	void ruby_mark_gc() const;
 
 	virtual ~H8();
@@ -153,7 +156,7 @@ private:
 
 	bool is_error = false;
 
-	RubyGate* gates_head;
+	chain resources;
 };
 // Context
 }
