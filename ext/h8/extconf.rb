@@ -22,20 +22,35 @@ abort 'missing free()' unless have_func 'free'
 # Give it a name
 extension_name = 'h8'
 
-dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/lib')
-
-dir_config(extension_name)
 ok = true
 
-unless have_header('include/v8.h')
-  $stderr.puts "can't find v8.h, install libv8 3.25.30+ first"
-  ok = false
+case RbConfig::CONFIG['target_os']
+when /darwin/
+  dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/lib')
+  chk_headers = ['include/v8.h']
+  chk_libs = ['v8_base', 'v8_snapshot', 'v8_libplatform', 'v8_libbase', 'icuuc', 'icudata']
+else
+  dir_config('v8', '/usr/include/libv8-3.30', '/usr/lib/libv8-3.30')
+  chk_headers = ['include/v8.h']
+  chk_libs = ['v8', 'icui18n', 'icuuc']
 end
 
-unless have_library('v8_base') && have_library('v8_snapshot') && have_library('v8_libplatform') \
-&& have_library('v8_libbase') && have_library('icuuc') && have_library('icudata')
-  $stderr.puts "can't find libv8"
-  ok = false
+dir_config(extension_name)
+
+chk_headers.each do |h|
+  unless have_header(h)
+    $stderr.puts "can't find v8 header '#{h}', install libv8 3.30+ first"
+    ok = false
+    break
+  end
+end
+
+chk_libs.each do |lib|
+  unless have_library(lib)
+    $stderr.puts "can't find v8 lib '#{lib}'"
+    ok = false
+    break
+  end
 end
 
 # This test is actually due to a Clang 3.3 shortcoming, included in OS X 10.9,

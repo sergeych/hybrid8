@@ -25,4 +25,6 @@ mkmf.log
 .DS_Store
 .idea
 .ruby-version
+.*swp
+.*swo
 
