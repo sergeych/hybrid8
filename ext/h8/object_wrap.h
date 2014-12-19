@@ -23,7 +23,7 @@
 #ifndef SRC_OBJECT_WRAP_H_
 #define SRC_OBJECT_WRAP_H_
 
-#include "v8.h"
+#include <include/v8.h>
 #include <assert.h>
 
 

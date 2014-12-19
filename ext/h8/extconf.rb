@@ -16,6 +16,11 @@
 
 require "mkmf"
 
+cxx11flag = " --std=c++11"
+
+$CXXFLAGS = CONFIG["CXXFLAGS"] unless defined?($CXXFLAGS)
+$CXXFLAGS += cxx11flag unless $CXXFLAGS.include?(cxx11flag)
+
 abort 'missing malloc()' unless have_func 'malloc'
 abort 'missing free()' unless have_func 'free'
 
