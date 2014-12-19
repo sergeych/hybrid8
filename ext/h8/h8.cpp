@@ -32,6 +32,5 @@ h8::H8::~H8() {
 	}
 
 	persistent_context.Reset();
-	// TODO: free isolate!
 	isolate->Dispose();
 }

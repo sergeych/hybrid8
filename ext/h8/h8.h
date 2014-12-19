@@ -15,8 +15,6 @@ extern VALUE value_class;
 
 extern ID id_is_a;
 
-//#include <ruby/thread.h>
-
 namespace h8 {
 
 class RubyGate;
@@ -40,7 +38,7 @@ public:
 	 * Call it with a proper exception class and be careful - after this call no code will be executed!
 	 */
 	void raise(VALUE exception_class) {
-		rb_raise(exception_class, reason);
+		rb_raise(exception_class, "%s", reason);
 	}
 
 protected:
@@ -171,7 +169,8 @@ private:
 	VALUE self;
 
 	void report_exception(v8::TryCatch& tc) {
-		rb_raise(h8_exception, "Failed to compile/execute script");
+		// Todo: carry out interpreter error information (e.g. line, text)
+		throw JsError("Failed to compile/execute script");
 	}
 
 	Persistent<Context> persistent_context;
