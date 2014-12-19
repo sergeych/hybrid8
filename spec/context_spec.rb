@@ -37,7 +37,6 @@ describe 'context' do
     res.should == 'che bel giorno'
     # And that should fail
     cxt1 = H8::Context.new
-    # Attn!!!!!!!! ---------- Disposing the isolate that is entered by a thread. - which?
     expect( -> {
       cxt1[:first] = obj
       res = cxt1.eval "first.res + ' giorno';"

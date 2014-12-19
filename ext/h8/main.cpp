@@ -1,3 +1,6 @@
+#define __cplusplus 201103L
+
+#include <functional>
 #include <h8.h>
 #include <include/libplatform/libplatform.h>
 
@@ -18,7 +21,7 @@ static void rvalue_free(void* ptr) {
 }
 
 static void rvalue_mark(void* ptr) {
-	JsGate *gate = (JsGate*)ptr;
+	JsGate *gate = (JsGate*) ptr;
 	rb_gc_mark(gate->ruby_context());
 }
 
@@ -56,11 +59,11 @@ static VALUE rvalue_is_undefined(VALUE self) {
 	return rv(self)->is_undefined();
 }
 
-static VALUE rvalue_get_attr(VALUE self,VALUE name) {
+static VALUE rvalue_get_attr(VALUE self, VALUE name) {
 	return rv(self)->get_attribute(name);
 }
 
-static VALUE rvalue_get_index(VALUE self,VALUE index) {
+static VALUE rvalue_get_index(VALUE self, VALUE index) {
 	return rv(self)->get_index(index);
 }
 
@@ -84,8 +87,8 @@ static VALUE rvalue_call(VALUE self, VALUE args) {
 	return rv(self)->call(args);
 }
 
-static VALUE rvalue_apply(VALUE self, VALUE to,VALUE args) {
-	return rv(self)->apply(to,args);
+static VALUE rvalue_apply(VALUE self, VALUE to, VALUE args) {
+	return rv(self)->apply(to, args);
 }
 
 static VALUE rvalue_get_ruby_context(VALUE self) {
@@ -100,22 +103,30 @@ inline H8* rc(VALUE self) {
 	return prcxt;
 }
 
-static VALUE context_eval(VALUE self, VALUE script) {
-	H8* cxt = rc(self);
-	H8::Scope s(cxt);
-	return cxt->eval_to_ruby(StringValueCStr(script));
+VALUE protect_ruby(const std::function<VALUE()> &block) {
+	try {
+		return block();
+	} catch (JsError& e) {
+		e.raise(h8_exception);
+	} catch (...) {
+		rb_raise(rb_eStandardError, "unknown error in JS");
+	}
+	return Qnil;
 }
 
-static VALUE context_set_var(VALUE self, VALUE name,VALUE value) {
-	try {
+static VALUE context_eval(VALUE self, VALUE script) {
+	return protect_ruby([&] {
+		H8* cxt = rc(self);
+		H8::Scope s(cxt);
+		return cxt->eval_to_ruby(StringValueCStr(script));
+	});
+}
+
+static VALUE context_set_var(VALUE self, VALUE name, VALUE value) {
+	return protect_ruby([=] {
 		rc(self)->set_var(name, value);
 		return Qnil;
-	}
-	catch(JsError& e) {
-		e.raise(h8_exception);
-	}
-	// It will never be there...
-	return Qnil;
+	});
 }
 
 static void context_free(void* ptr) {
@@ -126,7 +137,6 @@ static void context_mark(void* ptr) {
 	H8* h8 = (H8*) ptr;
 	h8->ruby_mark_gc();
 }
-
 
 VALUE h8::context_alloc(VALUE klass) {
 	H8 *h8 = new H8;
@@ -151,7 +161,8 @@ void Init_h8(void) {
 	context_class = rb_define_class_under(h8, "Context", rb_cObject);
 	rb_define_alloc_func(context_class, context_alloc);
 	rb_define_method(context_class, "eval", (ruby_method) context_eval, 1);
-	rb_define_method(context_class, "set_var", (ruby_method) context_set_var, 2);
+	rb_define_method(context_class, "set_var", (ruby_method) context_set_var,
+			2);
 
 	value_class = rb_define_class_under(h8, "Value", rb_cObject);
 	rb_define_alloc_func(value_class, rvalue_alloc);
@@ -160,20 +171,21 @@ void Init_h8(void) {
 	rb_define_method(value_class, "to_f", (ruby_method) rvalue_to_f, 0);
 	rb_define_method(value_class, "integer?", (ruby_method) rvalue_is_int, 0);
 	rb_define_method(value_class, "float?", (ruby_method) rvalue_is_float, 0);
-	rb_define_method(value_class, "string?", (ruby_method) rvalue_is_string,
-			0);
+	rb_define_method(value_class, "string?", (ruby_method) rvalue_is_string, 0);
 	rb_define_method(value_class, "array?", (ruby_method) rvalue_is_array, 0);
 	rb_define_method(value_class, "object?", (ruby_method) rvalue_is_object, 0);
-	rb_define_method(value_class, "function?", (ruby_method) rvalue_is_function, 0);
-	rb_define_method(value_class, "undefined?", (ruby_method) rvalue_is_undefined,
+	rb_define_method(value_class, "function?", (ruby_method) rvalue_is_function,
 			0);
+	rb_define_method(value_class, "undefined?",
+			(ruby_method) rvalue_is_undefined, 0);
 	rb_define_method(value_class, "_get_attr", (ruby_method) rvalue_get_attr,
 			1);
 	rb_define_method(value_class, "_get_index", (ruby_method) rvalue_get_index,
 			1);
 	rb_define_method(value_class, "_call", (ruby_method) rvalue_call, 1);
 	rb_define_method(value_class, "_apply", (ruby_method) rvalue_apply, 2);
-	rb_define_method(value_class, "context", (ruby_method) rvalue_get_ruby_context, 0);
+	rb_define_method(value_class, "context",
+			(ruby_method) rvalue_get_ruby_context, 0);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 
