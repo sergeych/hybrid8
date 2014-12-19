@@ -1,5 +1,3 @@
-#define __cplusplus 201103L
-
 #include <functional>
 #include <h8.h>
 #include <include/libplatform/libplatform.h>
@@ -138,10 +136,12 @@ static void context_mark(void* ptr) {
 	h8->ruby_mark_gc();
 }
 
-VALUE h8::context_alloc(VALUE klass) {
+namespace h8 {
+VALUE context_alloc(VALUE klass) {
 	H8 *h8 = new H8;
 	h8->self = Data_Wrap_Struct(klass, context_mark, context_free, h8);
 	return h8->self;
+}
 }
 
 void init_v8() {

@@ -163,7 +163,7 @@ public:
 	virtual ~H8();
 
 private:
-	friend VALUE context_alloc(VALUE klass);
+	friend VALUE h8::context_alloc(VALUE klass);
 
 	Isolate *isolate;
 	VALUE self;
