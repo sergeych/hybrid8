@@ -29,22 +29,24 @@ extension_name = 'h8'
 
 ok = true
 
+chk_headers = ['include/v8.h']
+
 case RbConfig::CONFIG['target_os']
 when /darwin/
+  chk_libs = %w(v8_base v8_libbase v8_libplatform v8_snapshot icudata icui18n icuuc)
   dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/lib')
-  chk_headers = ['include/v8.h']
-  chk_libs = ['v8_base', 'v8_snapshot', 'v8_libplatform', 'v8_libbase', 'icuuc', 'icudata']
 else
-  dir_config('v8', '/usr/include/libv8-3.30', '/usr/lib/libv8-3.30')
-  chk_headers = ['include/v8.h']
-  chk_libs = ['v8', 'icui18n', 'icuuc']
+  # linux:
+  # shared libv8.so, system shared libicu, static v8_libplatform
+  chk_libs = %w(v8 icudata icui18n icuuc v8_libplatform)
+  dir_config('v8', '/usr/include/libv8-3.31', '/usr/lib/libv8-3.31')
 end
 
 dir_config(extension_name)
 
 chk_headers.each do |h|
   unless have_header(h)
-    $stderr.puts "can't find v8 header '#{h}', install libv8 3.30+ first"
+    $stderr.puts "can't find v8 header '#{h}', install libv8 3.31+ first"
     ok = false
     break
   end
@@ -67,8 +69,6 @@ end
 #   $CFLAGS += ' -Wall -W -O3 -g'
 # end
 
-$CXXFLAGS += ' --std=c++11'
-
 if ok
   # create_makefile('h8/h8')
   create_makefile(extension_name)
@@ -81,7 +81,7 @@ else
   raise "Unable to build, correct above errors and rerun"
 end
 
-# LIBV8_COMPATIBILITY = '~> 3.30'
+# LIBV8_COMPATIBILITY = '~> 3.31'
 #
 # begin
 #   require 'rubygems'
