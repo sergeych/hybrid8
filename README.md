@@ -23,6 +23,19 @@ be reclaimed as long as there is at least one active wrapped object returned fro
 You should have installed libv8, use latest version with v8::Isolate and v8::Locker. This version
 may not find you installation, contact me if you have problems, I'll tune it up.
 
+#### Macos (10.9 maybe+)
+
+The working process:
+
+* install from sources 3.31.77 (or try newer)
+
+    gclient update
+    export CXXFLAGS='-std=c++11 -stdlib=libc++ -mmacosx-version-min=10.9'
+    export LDFLAGS=-lc++
+    make native
+
+Note that exporting symbols is a hack that may not be in need anymore.
+
 ### Setting up
 
 Add this line to your application's Gemfile:

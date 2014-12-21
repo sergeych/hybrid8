@@ -34,7 +34,8 @@ chk_headers = ['include/v8.h']
 case RbConfig::CONFIG['target_os']
 when /darwin/
   chk_libs = %w(v8_base v8_libbase v8_libplatform v8_snapshot icudata icui18n icuuc)
-  dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/lib')
+  dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/out/native')
+  CONFIG['CXXFLAGS'] += ' --std=c++11'
 else
   # linux:
   # shared libv8.so, system shared libicu, static v8_libplatform

@@ -17,6 +17,8 @@ extern ID id_is_a;
 
 namespace h8 {
 
+VALUE context_alloc(VALUE klass);
+
 class RubyGate;
 
 template<class T> inline void t(const T& x) {
