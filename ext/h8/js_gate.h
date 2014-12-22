@@ -193,7 +193,6 @@ public:
 	}
 
 	virtual void free() {
-		t("Freeing JS gate");
 		persistent_value.Reset();
 		AllocatedResource::free();
 	}
@@ -207,7 +206,6 @@ public:
 	}
 
 	virtual ~JsGate() {
-		t("~JSG");
 		persistent_value.Reset();
 	}
 

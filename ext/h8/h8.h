@@ -4,6 +4,7 @@
 #include <include/v8.h>
 #include <ruby.h>
 #include <iostream>
+#include <exception>
 #include "allocated_resource.h"
 
 using namespace v8;
@@ -17,6 +18,8 @@ extern ID id_is_a;
 
 namespace h8 {
 
+/// Allocate ruby H8::Context class (wrapper for h8::H8), ruby utility function
+/// shold be declared as friend
 VALUE context_alloc(VALUE klass);
 
 class RubyGate;

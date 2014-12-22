@@ -18,7 +18,7 @@
 					<folderInfo id="org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886.23449582" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.macosx.base.724835435" name="MacOSX GCC" superClass="cdt.managedbuild.toolchain.gnu.macosx.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.MachO64" id="cdt.managedbuild.target.gnu.platform.macosx.base.138101766" name="Debug Platform" osList="macosx" superClass="cdt.managedbuild.target.gnu.platform.macosx.base"/>
-							<builder id="cdt.managedbuild.target.gnu.builder.macosx.base.464921202" managedBuildOn="false" name="Gnu Make Builder.Build (GNU)" superClass="cdt.managedbuild.target.gnu.builder.macosx.base"/>
+							<builder id="cdt.managedbuild.target.gnu.builder.macosx.base.464921202" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.macosx.base"/>
 							<tool id="cdt.managedbuild.tool.macosx.c.linker.macosx.base.1084044356" name="MacOS X C Linker" superClass="cdt.managedbuild.tool.macosx.c.linker.macosx.base"/>
 							<tool id="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base.991281577" name="MacOS X C++ Linker" superClass="cdt.managedbuild.tool.macosx.cpp.linker.macosx.base">
 								<inputType id="cdt.managedbuild.tool.macosx.cpp.linker.input.2102433045" superClass="cdt.managedbuild.tool.macosx.cpp.linker.input">
@@ -31,10 +31,10 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.macosx.base.1022205577" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.macosx.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base.1418182023" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base">
-								<option id="gnu.cpp.compiler.option.include.paths.1192261372" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/System/Library/Frameworks/Ruby.framework/Versions/2.0/Headers"/>
-									<listOptionValue builtIn="false" value="/Users/sergeych/android-ndk/sources/cxx-stl/stlport/stlport/using"/>
+								<option id="gnu.cpp.compiler.option.include.paths.1192261372" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/Users/sergeych/dev/v8"/>
+									<listOptionValue builtIn="false" value="/System/Library/Frameworks/Ruby.framework/Versions/2.0/Headers/ruby"/>
+									<listOptionValue builtIn="false" value="/Users/sergeych/android-ndk/sources/cxx-stl/stlport/stlport"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1575867780" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -59,7 +59,13 @@
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886;org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886.23449582;cdt.managedbuild.tool.gnu.c.compiler.macosx.base.582228700;cdt.managedbuild.tool.gnu.c.compiler.input.507527137">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886;org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886.23449582;org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp.2136687444;cdt.managedbuild.tool.gnu.cpp.compiler.input.1381541495">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886;org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886.23449582;cdt.managedbuild.tool.gnu.cpp.compiler.macosx.base.1418182023;cdt.managedbuild.tool.gnu.cpp.compiler.input.1575867780">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886;org.eclipse.linuxtools.cdt.autotools.core.toolChain.940739886.23449582;org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc.1906215230;cdt.managedbuild.tool.gnu.c.compiler.input.917212459">
