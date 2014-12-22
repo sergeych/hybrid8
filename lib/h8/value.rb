@@ -15,7 +15,7 @@ module H8
     include Comparable
 
     def inspect
-      "<H8::Value #{to_s}>"
+      "<H8::Value #{to_ruby}>"
     end
 
     # Get js object attribute by either name or index (should be Fixnum instance). It always

@@ -13,6 +13,8 @@ using namespace std;
 extern VALUE h8_exception;
 extern VALUE h8_class;
 extern VALUE value_class;
+extern VALUE ruby_gate_class;
+
 
 extern ID id_is_a;
 

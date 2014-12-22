@@ -44,26 +44,7 @@ public:
 	 * locks permanently value until get recycled.
 	 */
 	template<class T>
-	static VALUE to_ruby(H8* h8, const Handle<T>& value) {
-		// Convert primitives
-		Local<Value> v = value;
-		if (v->IsString()) {
-			H8::Scope scope(h8);
-			String::Utf8Value res(v);
-			return *res ? rb_str_new2(*res) : Qnil;
-		}
-		if (v->IsInt32()) {
-			return INT2FIX(v->Int32Value());
-		}
-		if (v->IsNumber()) {
-			return DBL2NUM(v->NumberValue());
-		}
-		JsGate *gate;
-		VALUE ruby_gate = rb_class_new_instance(0, NULL, value_class);
-		Data_Get_Struct(ruby_gate, JsGate, gate);
-		gate->set(h8, value);
-		return ruby_gate;
-	}
+	static VALUE to_ruby(H8* h8, const Handle<T>& value);
 
 	/**
 	 * Reset gate to the specified handle.
@@ -218,5 +199,34 @@ private:
 };
 
 }
+
+#include "ruby_gate.h"
+
+template<class T>
+VALUE h8::JsGate::to_ruby(H8* h8, const Handle<T>& value) {
+	// Convert primitives
+	Local<Value> v = value;
+	if (v->IsString()) {
+		H8::Scope scope(h8);
+		String::Utf8Value res(v);
+		return *res ? rb_str_new2(*res) : Qnil;
+	}
+	if (v->IsInt32()) {
+		return INT2FIX(v->Int32Value());
+	}
+	if (v->IsNumber()) {
+		return DBL2NUM(v->NumberValue());
+	}
+	RubyGate *rg = RubyGate::unwrap(v.As<v8::Object>());
+	if( rg ) {
+		return rg->rubyObject();
+	}
+	JsGate *gate;
+	VALUE ruby_gate = rb_class_new_instance(0, NULL, value_class);
+	Data_Get_Struct(ruby_gate, JsGate, gate);
+	gate->set(h8, value);
+	return ruby_gate;
+}
+
 
 #endif

@@ -10,6 +10,7 @@ void Init_h8(void);
 
 VALUE h8_exception;
 VALUE context_class;
+VALUE ruby_gate_class;
 VALUE value_class;
 
 ID id_is_a;
@@ -159,6 +160,7 @@ void Init_h8(void) {
 	VALUE h8 = rb_define_module("H8");
 
 	context_class = rb_define_class_under(h8, "Context", rb_cObject);
+	ruby_gate_class = rb_define_class_under(h8, "RubyGate", rb_cObject);
 	rb_define_alloc_func(context_class, context_alloc);
 	rb_define_method(context_class, "eval", (ruby_method) context_eval, 1);
 	rb_define_method(context_class, "set_var", (ruby_method) context_set_var,
