@@ -39,8 +39,8 @@ when /darwin/
 else
   # example linux package https://github.com/porzione/v8-git-debian
   dir_config('v8', '/usr/include/libv8-3.31', '/usr/lib/libv8-3.31')
-  # force static
-  $LOCAL_LIBS = chk_libs.map{|l| "-l#{l}"}.join(" ")
+  # force static, but system icu
+  $LOCAL_LIBS = chk_libs.reject{|l| l.match /^icu/ }.map{|l| "-l#{l}"}.join(" ")
 end
 
 dir_config(extension_name)
