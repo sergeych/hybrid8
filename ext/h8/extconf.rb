@@ -30,17 +30,17 @@ extension_name = 'h8'
 ok = true
 
 chk_headers = ['include/v8.h']
+chk_libs = %w(v8_base v8_libbase v8_libplatform v8_snapshot icudata icui18n icuuc)
 
 case RbConfig::CONFIG['target_os']
 when /darwin/
-  chk_libs = %w(v8_base v8_libbase v8_libplatform v8_snapshot icudata icui18n icuuc)
   dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/out/native')
   CONFIG['CXXFLAGS'] += ' --std=c++11'
 else
-  # linux:
-  # shared libv8.so, system shared libicu, static v8_libplatform
-  chk_libs = %w(v8 icudata icui18n icuuc v8_libplatform)
+  # example linux package https://github.com/porzione/v8-git-debian
   dir_config('v8', '/usr/include/libv8-3.31', '/usr/lib/libv8-3.31')
+  # force static
+  $LOCAL_LIBS = chk_libs.map{|l| "-l#{l}"}.join(" ")
 end
 
 dir_config(extension_name)
