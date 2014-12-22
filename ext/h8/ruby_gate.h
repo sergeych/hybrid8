@@ -10,7 +10,7 @@ namespace h8 {
 
 	/**
 	 * Gate a generic ruby object to Javascript context and retain it for
-	 * the lidetime of the javascript object
+	 * the lifetime of the javascript object
 	 */
     class RubyGate : public ObjectWrap, public AllocatedResource {
     public:
@@ -25,7 +25,6 @@ namespace h8 {
         	templ->SetInternalFieldCount(1);
         	templ->SetCallAsFunctionHandler(&ObjectCallback);
         	Wrap(templ->NewInstance());
-        	MakeWeak();
         }
 
         void setRubyInstance(VALUE instance) {
@@ -36,8 +35,16 @@ namespace h8 {
         	rb_gc_mark(ruby_object);
         }
 
+        virtual void free() {
+//        	t("RG::Free");
+        	AllocatedResource::free();
+        	persistent().ClearWeak();
+        	persistent().Reset();
+        	delete this;
+        }
+
         virtual ~RubyGate() {
-        	printf("------------------ Ruby object gate destructor\n");
+//        	t("------------------ Ruby object gate destructor");
         }
 
     private:

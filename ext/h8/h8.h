@@ -33,7 +33,7 @@ template<class T> inline void t(const T& x) {
  * interpreter fails to cope with syntax, parameters are used in a wrong way, etc. Instead of calling
  * rb_raise() which will longjump() over all your C++ code, throw instance of JsError.
  */
-class JsError : public std::exception {
+class JsError: public std::exception {
 public:
 	JsError(const char* str_reason) {
 		reason = str_reason;
@@ -68,7 +68,8 @@ public:
 
 	static void init();
 
-	H8() : self(Qnil) {
+	H8() :
+			self(Qnil) {
 		isolate = Isolate::New();
 		Isolate::Scope isolate_scope(isolate);
 		HandleScope handle_scope(isolate);
