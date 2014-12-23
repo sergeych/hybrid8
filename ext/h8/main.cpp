@@ -8,7 +8,7 @@ extern "C" {
 void Init_h8(void);
 }
 
-VALUE h8_exception;
+VALUE h8_exception, js_exception;
 VALUE context_class;
 VALUE ruby_gate_class;
 VALUE value_class;
@@ -106,7 +106,7 @@ VALUE protect_ruby(const std::function<VALUE()> &block) {
 	try {
 		return block();
 	} catch (JsError& e) {
-		e.raise(h8_exception);
+		e.raise();
 	} catch (...) {
 		rb_raise(rb_eStandardError, "unknown error in JS");
 	}
@@ -190,5 +190,6 @@ void Init_h8(void) {
 			(ruby_method) rvalue_get_ruby_context, 0);
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
+	js_exception = rb_define_class_under(h8, "JsError", h8_exception);
 
 }

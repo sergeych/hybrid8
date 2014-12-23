@@ -16,6 +16,13 @@ javascript context
 while there are ruby objects referencing it. It also means that once created H8::Context will not
 be reclaimed as long as there is at least one active wrapped object returned from the script.
 
+- you can pass ruby objects from ruby code called from javascript back to the ruby code intact.
+Ruby objects are automatically wrapped in js code and unwrapped in ruby code (you might need to
+call #to_ruby)
+
+- Uncaught ruby exceptions are thrown as javascript exceptions in javascript code. The same,
+uncaught javascript exceptions raise ruby error in ruby code.
+
 ## Installation
 
 ### Prerequisites

@@ -147,6 +147,9 @@ public:
 		return value()->IsUndefined() ? Qtrue : Qfalse;
 	}
 
+	/**
+	 * Call this as function over global context
+	 */
 	VALUE call(VALUE args) const {
 		v8::HandleScope scope(h8->getIsolate());
 		return apply(h8->getContext()->Global(), args);
@@ -161,6 +164,10 @@ public:
 		return h8->ruby_context();
 	}
 
+	/**
+	 * Call this object as function applying it to the object self
+	 * (which will be this during javascript call)
+	 */
 	VALUE apply(Local<Value> self, VALUE args) const {
 		H8::Scope scope(h8);
 		long count = RARRAY_LEN(args);

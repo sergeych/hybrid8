@@ -19,6 +19,7 @@ describe 'ruby gate' do
   it 'should pass through ruby objects across js code' do
     class MyObject
       attr :some_val
+
       def initialize some_val
         @some_val = some_val
       end
@@ -35,8 +36,8 @@ describe 'ruby gate' do
   end
 
   it 'should properly pass exceptions via callables' do
-    # pending
-    class MyException < StandardError; end
+    class MyException < StandardError;
+    end
     cxt      = H8::Context.new
     cxt[:fn] = -> (a, b) {
       raise MyException, "Shit happens"
@@ -52,21 +53,34 @@ describe 'ruby gate' do
         result;
     End
     res.should_not == 'bad'
-    # p res.class.name
-    # p res
     res.code.should == 'caught!'
     res.message.should == 'ruby exception'
     x = res.exception.source
     x.should be_kind_of(MyException)
     x.message.should == 'Shit happens'
-    # res.should be_kind_of(StandardError)
-    # It sould be of some reasonable exception class that means gated ruby exception
-    # for JS code - be able to retrieve source exception
-    # res.should be_kind_of(MyException)
   end
 
-  it 'should object properties'
-  it 'should object methods'
+  it 'should pass through uncaught ruby exceptions' do
+    class MyException < StandardError;
+    end
+    cxt      = H8::Context.new
+    # pending
+    cxt[:fn] = -> (a, b) {
+      raise MyException, "Shit happens"
+    }
+    expect(-> {
+      res = cxt.eval <<-End
+      result = fn(11, 22);
+      End
+    }).to raise_error(MyException) { |e|
+            e.message.should == 'Shit happens'
+          }
+  end
+
+  it 'should access object properties'
+  it 'should call object methods'
+  it 'should not access Object methods'
+  it 'should not access non-public methods'
   it 'should retain ruby objects'
   it 'should gate classes'
 end

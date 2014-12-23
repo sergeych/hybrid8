@@ -6,15 +6,15 @@
 #include <iostream>
 #include <exception>
 #include "allocated_resource.h"
+#include "JsCatcher.h"
 
 using namespace v8;
 using namespace std;
 
-extern VALUE h8_exception;
+extern VALUE h8_exception, js_exception;
 extern VALUE h8_class;
 extern VALUE value_class;
 extern VALUE ruby_gate_class;
-
 
 extern ID id_is_a;
 
@@ -25,6 +25,7 @@ namespace h8 {
 VALUE context_alloc(VALUE klass);
 
 class RubyGate;
+class H8;
 
 template<class T> inline void t(const T& x) {
 	cout << x << endl << flush;
@@ -37,19 +38,32 @@ template<class T> inline void t(const T& x) {
  */
 class JsError: public std::exception {
 public:
-	JsError(const char* str_reason) {
+	JsError(H8* h8, const char* str_reason) :
+			h8(h8), has_js_exception(false) {
 		reason = str_reason;
 	}
+
+	JsError(H8* h8, v8::Local<v8::Message> message, v8::Local<v8::Value> exception);
 
 	/**
 	 * Call it with a proper exception class and be careful - after this call no code will be executed!
 	 */
-	void raise(VALUE exception_class) {
-		rb_raise(exception_class, "%s", reason);
-	}
+	void raise();
 
+	Local<Message> message() const;
+
+	Local<Value> exception() const;
+
+	virtual ~JsError() {
+		_message.Reset();
+		_exception.Reset();
+	}
 protected:
 	const char* reason;
+	bool has_js_exception;
+	H8 *h8;
+	v8::Persistent<v8::Message, v8::CopyablePersistentTraits<v8::Message>> _message;
+	v8::Persistent<v8::Value, v8::CopyablePersistentTraits<v8::Value>> _exception;
 };
 
 class H8 {
@@ -83,29 +97,7 @@ public:
 		persistent_context.Reset(isolate, context);
 	}
 
-	Handle<Value> eval(const char* script_utf) {
-		v8::EscapableHandleScope escape(isolate);
-		Local<Value> result;
-
-		Handle<v8::String> script_source = String::NewFromUtf8(isolate,
-				script_utf);
-		v8::Handle<v8::Script> script;
-		v8::TryCatch try_catch;
-		v8::ScriptOrigin origin(String::NewFromUtf8(isolate, "eval"));
-
-		script = v8::Script::Compile(script_source, &origin);
-
-		if (script.IsEmpty()) {
-			report_exception(try_catch);
-			result = Undefined(isolate);
-		} else {
-			result = script->Run();
-			if (try_catch.HasCaught()) {
-				report_exception(try_catch);
-			}
-		}
-		return escape.Escape(result);
-	}
+	Handle<Value> eval(const char* script_utf);
 
 	VALUE eval_to_ruby(const char* script_utf) {
 		// TODO: throw ruby exception on error
@@ -176,11 +168,6 @@ private:
 	Isolate *isolate;
 	VALUE self;
 
-	void report_exception(v8::TryCatch& tc) {
-		// Todo: carry out interpreter error information (e.g. line, text)
-		throw JsError("Failed to compile/execute script");
-	}
-
 	Persistent<Context> persistent_context;
 
 	bool is_error = false;
@@ -197,5 +184,21 @@ typedef VALUE (*ruby_method)(...);
 inline VALUE h8::H8::to_ruby(Handle<Value> value) {
 	return JsGate::to_ruby(this, value);
 }
+
+inline h8::JsError::JsError(H8* h8, v8::Local<v8::Message> message,
+		v8::Local<v8::Value> exception) :
+		h8(h8), _message(h8->getIsolate(), message), _exception(h8->getIsolate(),
+				exception), has_js_exception(true), reason(NULL) {
+}
+
+inline Local<Message> h8::JsError::message() const {
+	return Local<Message>::New(h8->getIsolate(), _message);
+}
+
+inline Local<Value> h8::JsError::exception() const {
+	return Local<Value>::New(h8->getIsolate(), _exception);
+}
+
+
 
 #endif

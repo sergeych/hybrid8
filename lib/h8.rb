@@ -7,4 +7,13 @@ module H8
   # The exception that H8 raises on errors
   class Error < StandardError
   end
+
+  class JsError < Error
+    attr :message
+    attr :source
+
+    def to_s
+      message
+    end
+  end
 end
