@@ -168,17 +168,7 @@ public:
 	 * Call this object as function applying it to the object self
 	 * (which will be this during javascript call)
 	 */
-	VALUE apply(Local<Value> self, VALUE args) const {
-		H8::Scope scope(h8);
-		long count = RARRAY_LEN(args);
-		Local<Value> *js_args = new Local<Value> [count];
-		for (int i = 0; i < count; i++) {
-			js_args[i] = h8->to_js(rb_ary_entry(args, i));
-		}
-		Local<Value> result = object()->CallAsFunction(self, count, js_args);
-		delete[] js_args;
-		return h8->to_ruby(result);
-	}
+	VALUE apply(Local<Value> self, VALUE args) const;
 
 	virtual void free() {
 		persistent_value.Reset();

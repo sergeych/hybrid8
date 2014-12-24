@@ -170,4 +170,28 @@ describe 'js_gate' do
     res.doAdd(10, 1).should == 111
   end
 
+  it 'should call js functions' do
+    res = H8::Context.eval <<-End
+      var fn = function cls(a, b) {
+        return a + ":" + b;
+      }
+      fn;
+    End
+    res.call('foo','bar').should == 'foo:bar'
+  end
+
+  it 'should gate uncaught exceptions from js callbacks' do
+    res = H8::Context.eval <<-End
+      var fn = function cls(a, b) {
+        // Will try to throw
+        // uncaught error
+        throw Error("the test error");
+      }
+      fn;
+    End
+    expect( -> {
+      res.call('foo', 'bar').should == 'foo:bar'
+    }).to raise_error(H8::JsError)
+  end
+
 end

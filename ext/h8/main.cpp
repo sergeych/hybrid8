@@ -17,6 +17,17 @@ VALUE Rundefined;
 ID id_is_a;
 ID id_safe_call;
 
+VALUE protect_ruby(const std::function<VALUE()> &block) {
+	try {
+		return block();
+	} catch (JsError& e) {
+		e.raise();
+	} catch (...) {
+		rb_raise(rb_eStandardError, "unknown error in JS");
+	}
+	return Qnil;
+}
+
 static void rvalue_free(void* ptr) {
 	delete (JsGate*) ptr;
 }
@@ -85,7 +96,9 @@ static VALUE rvalue_is_function(VALUE self) {
 }
 
 static VALUE rvalue_call(VALUE self, VALUE args) {
-	return rv(self)->call(args);
+	return protect_ruby([&] {
+		return rv(self)->call(args);
+	});
 }
 
 static VALUE rvalue_apply(VALUE self, VALUE to, VALUE args) {
@@ -102,17 +115,6 @@ inline H8* rc(VALUE self) {
 	H8 *prcxt;
 	Data_Get_Struct(self, H8, prcxt);
 	return prcxt;
-}
-
-VALUE protect_ruby(const std::function<VALUE()> &block) {
-	try {
-		return block();
-	} catch (JsError& e) {
-		e.raise();
-	} catch (...) {
-		rb_raise(rb_eStandardError, "unknown error in JS");
-	}
-	return Qnil;
 }
 
 static VALUE context_eval(VALUE self, VALUE script) {
