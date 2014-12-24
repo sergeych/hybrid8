@@ -207,4 +207,6 @@ describe 'js_gate' do
     }).to raise_error(MyException)
   end
 
+  it 'should be able to pass js callable to the block'
+
 end

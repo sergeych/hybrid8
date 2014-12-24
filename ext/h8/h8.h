@@ -56,7 +56,7 @@ public:
 
 	Local<Value> exception() const;
 
-	virtual ~JsError() {
+	virtual ~JsError() noexcept {
 		_message.Reset();
 		_exception.Reset();
 	}
