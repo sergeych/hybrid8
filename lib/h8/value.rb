@@ -57,7 +57,6 @@ module H8
     # @param args any arguments
     # @return [H8::Value] result returned by the function which might be undefined
     def apply this, *args
-      p this
       _apply this, args
     end
 

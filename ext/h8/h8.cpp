@@ -51,7 +51,7 @@ void h8::H8::ruby_mark_gc() const {
 		((AllocatedResource*) x)->rb_mark_gc();
 }
 
-v8::Handle<v8::Value> h8::H8::eval(const char* script_utf) {
+v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,int max_time) {
 	v8::EscapableHandleScope escape(isolate);
 	Local<Value> result;
 

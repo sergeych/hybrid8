@@ -99,7 +99,7 @@ public:
 		persistent_context.Reset(isolate, context);
 	}
 
-	Handle<Value> eval(const char* script_utf);
+	Handle<Value> eval(const char* script_utf,int max_time=0);
 
 	VALUE eval_to_ruby(const char* script_utf) {
 		// TODO: throw ruby exception on error

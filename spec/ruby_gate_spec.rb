@@ -19,10 +19,10 @@ describe 'ruby gate' do
   it 'should gate callables with varargs' do
     cxt      = H8::Context.new
     cxt[:fn] = -> (*args) {
-      p args.join(' ')
+      args.reduce(0){|all,x| all+x }
     }
 
-    res = cxt.eval "fn(11, 22);"
+    cxt.eval('fn(11, 22, 100);').should == 133
     GC.start
   end
 
