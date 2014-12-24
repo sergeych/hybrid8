@@ -116,7 +116,6 @@ describe 'ruby gate' do
     it 'should access object properties and methods' do
       cxt       = H8::Context.new
       cxt[:foo] = Test.new
-      # pending
       cxt.eval('foo.ro').should == 'readonly'
       cxt.eval('foo.rw').should == 'not initialized'
       cxt.eval('foo.base').should == H8::Undefined
@@ -125,6 +124,15 @@ describe 'ruby gate' do
       cxt.eval('foo.priv_method').should == H8::Undefined
       cxt.eval('foo.test_args').should be_kind_of(Proc)
       cxt.eval('foo.test_args("hi", "you")').should == 'hi-you'
+    end
+
+    it 'should set ruby properties' do
+      cxt       = H8::Context.new
+      cxt[:foo] = t = Test.new
+      cxt.eval('foo.rw="hello";')
+      pending
+      t.rw.should == 'hello'
+      cxt.eval('foo.rw').should == 'hello'
     end
 
     it 'should gate classes'

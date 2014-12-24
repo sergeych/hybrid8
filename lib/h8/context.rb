@@ -37,9 +37,9 @@ module H8
         m = instance.public_method(method)
         if m.owner == instance.class
           if m.arity != 0
-            return -> (*args) { instance.send(method, *args) }
+            return -> (*args) { m.call *args }
           else
-            return instance.send(method, *args)
+            return m.call *args
           end
         end
       rescue NameError
