@@ -43,6 +43,14 @@ describe 'context' do
     }).to raise_error(H8::Error)
   end
 
-  it 'should limit script execution time'
+  # it 'should limit script execution time' do
+  #   cxt = H8::Context.new
+  #   t = cxt.eval <<-End
+  #     var start = new Date();
+  #     start;
+  #   End
+  #   p t.getTime()
+  #
+  # end
 
 end

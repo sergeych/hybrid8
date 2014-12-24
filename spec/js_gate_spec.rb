@@ -70,7 +70,7 @@ describe 'js_gate' do
 
   it 'should eval and keep context alive' do
     cxt = H8::Context.new
-    wr = WeakRef.new cxt
+    wr  = WeakRef.new cxt
     obj = cxt.eval("({ 'foo': 'bar', 'bar': 122 });")
     cxt = nil
     GC.start # cxt is now kept only by H8::Value obj
@@ -104,7 +104,7 @@ describe 'js_gate' do
     obj.keys.should == Set.new(['foo', 'bar'])
 
     hash = {}
-    obj.each { |k,v| hash[k] = v.to_ruby }
+    obj.each { |k, v| hash[k] = v.to_ruby }
     hash.should == { "foo" => "bar", "bar" => 122 }
     obj.to_h.should == { "foo" => "bar", "bar" => 122 }
     obj.to_ruby.should == { "foo" => "bar", "bar" => 122 }
@@ -148,7 +148,7 @@ describe 'js_gate' do
   end
 
   it 'should raise error on syntax' do
-    expect( -> {
+    expect(-> {
       H8::Context.eval 'this is not a valid js'
     }).to raise_error(H8::Error)
   end
@@ -170,6 +170,24 @@ describe 'js_gate' do
     res.doAdd(10, 1).should == 111
   end
 
+  it 'should pass exceptions from member function calls' do
+    res = H8::Context.eval <<-End
+      function cls(base) {
+        this.base = base;
+        this.doAdd = function(a, b) {
+          throw Error("Test error")
+          return a + b + base;
+        }
+      }
+      new cls(100);
+    End
+    expect(-> {
+      res.doAdd(10, 1).should == 111
+    }).to raise_error(H8::JsError) { |e|
+            e.message.should == "Uncaught Error: Test error"
+          }
+  end
+
   it 'should call js functions' do
     res = H8::Context.eval <<-End
       var fn = function cls(a, b) {
@@ -177,11 +195,13 @@ describe 'js_gate' do
       }
       fn;
     End
-    res.call('foo','bar').should == 'foo:bar'
+    res.call('foo', 'bar').should == 'foo:bar'
+
     def xx(val, &block)
       "::" + val + "-" + block.call('hello', 'world')
     end
-    xx("123", &res.to_proc ).should == "::123-hello:world"
+
+    xx("123", &res.to_proc).should == "::123-hello:world"
   end
 
   it 'should gate uncaught exceptions from js callbacks' do
@@ -197,10 +217,11 @@ describe 'js_gate' do
   end
 
   it 'should pass thru uncaught ruby exceptions from js->ruby callbacks' do
-    class MyException < StandardError; end;
-    cxt = H8::Context.new
+    class MyException < StandardError;
+    end;
+    cxt            = H8::Context.new
     cxt[:bad_call] = -> { raise MyException }
-    res = cxt.eval <<-End
+    res            = cxt.eval <<-End
       var fn = function cls(a, b) {
         bad_call();
       }
@@ -211,6 +232,5 @@ describe 'js_gate' do
     }).to raise_error(MyException)
   end
 
-  it 'should be able to pass js callable to the block'
 
 end

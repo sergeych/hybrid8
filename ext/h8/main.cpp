@@ -102,7 +102,9 @@ static VALUE rvalue_call(VALUE self, VALUE args) {
 }
 
 static VALUE rvalue_apply(VALUE self, VALUE to, VALUE args) {
-	return rv(self)->apply(to, args);
+	return protect_ruby([&] {
+		return rv(self)->apply(to, args);
+	});
 }
 
 static VALUE rvalue_get_ruby_context(VALUE self) {
