@@ -183,15 +183,28 @@ describe 'js_gate' do
   it 'should gate uncaught exceptions from js callbacks' do
     res = H8::Context.eval <<-End
       var fn = function cls(a, b) {
-        // Will try to throw
-        // uncaught error
         throw Error("the test error");
       }
       fn;
     End
-    expect( -> {
+    expect(-> {
       res.call('foo', 'bar').should == 'foo:bar'
     }).to raise_error(H8::JsError)
+  end
+
+  it 'should pass thru uncaught ruby exceptions from js->ruby callbacks' do
+    class MyException < StandardError; end;
+    cxt = H8::Context.new
+    cxt[:bad_call] = -> { raise MyException }
+    res = cxt.eval <<-End
+      var fn = function cls(a, b) {
+        bad_call();
+      }
+      fn;
+    End
+    expect(-> {
+      res.call('foo', 'bar').should == 'foo:bar'
+    }).to raise_error(MyException)
   end
 
 end
