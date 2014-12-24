@@ -45,13 +45,12 @@ describe 'context' do
 
   # it 'should limit script execution time' do
   #   cxt = H8::Context.new
-  #   cxt[:print] = -> (*args) { p args; nil }
+  #   cxt[:print] = -> (*args) { puts args.join(' ')}
   #   t = cxt.eval <<-End
-  #     // var start = new Date();
-  #     print(1,2);
-  #     0;
+  #     var start = new Date();
+  #     start;
   #   End
-  #   # p t.getTime()
+  #   p t.getTime()
   #
   # end
 

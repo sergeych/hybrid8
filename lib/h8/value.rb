@@ -33,7 +33,7 @@ module H8
       instance_eval <<-End
               def #{name} *args, **kwargs
                 res = _get_attr('#{name}')
-                (res.is_a?(H8::Value) && res.function?) ? res.apply(res,*args) : res
+                (res.is_a?(H8::Value) && res.function?) ? res.apply(self,*args) : res
               end
       End
       send method_sym, *arguments
@@ -57,6 +57,7 @@ module H8
     # @param args any arguments
     # @return [H8::Value] result returned by the function which might be undefined
     def apply this, *args
+      p this
       _apply this, args
     end
 
