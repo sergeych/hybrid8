@@ -25,17 +25,26 @@ module H8
 
     # Exectue script in a new context with optionally set vars. @see H8#set_all
     # @return [Value] wrapped object returned by the script
-    def self.eval script, ** kwargs
-      Context.new(**kwargs).eval script
+    def self.eval script, **kwargs
+      Context.new(** kwargs).eval script
     end
 
+    # Secure gate for JS to securely access ruby class properties (methods with no args)
+    # and methods.
     def self.secure_call instance, method, args=nil
       method = method.to_sym
-      if instance.public_methods(false).include?(method)
-        instance.send method, *args
-      else
-        H8::Undefined
+      begin
+        m = instance.public_method(method)
+        if m.owner == instance.class
+          if m.arity != 0
+            return -> (*args) { instance.send(method, *args) }
+          else
+            return instance.send(method, *args)
+          end
+        end
+      rescue NameError
       end
+      H8::Undefined
     end
   end
 end

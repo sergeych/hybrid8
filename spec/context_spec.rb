@@ -43,4 +43,6 @@ describe 'context' do
     }).to raise_error(H8::Error)
   end
 
+  it 'should limit script execution time'
+
 end
