@@ -217,6 +217,9 @@ VALUE h8::JsGate::to_ruby(H8* h8, const Handle<T>& value) {
 	if( v->IsUndefined()) {
 		return Rundefined;
 	}
+	if( v->IsNull() ) {
+		return Qnil;
+	}
 	RubyGate *rg = RubyGate::unwrap(v.As<v8::Object>());
 	if( rg ) {
 		return rg->rubyObject();

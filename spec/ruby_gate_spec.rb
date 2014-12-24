@@ -16,6 +16,24 @@ describe 'ruby gate' do
     GC.start
   end
 
+  it 'should gate callables with varargs' do
+    cxt      = H8::Context.new
+    cxt[:fn] = -> (*args) {
+      p args.join(' ')
+    }
+
+    res = cxt.eval "fn(11, 22);"
+    GC.start
+  end
+
+  it 'should convert nil' do
+    cxt      = H8::Context.new
+    cxt[:fn] = -> {
+      nil
+    }
+    cxt.eval('fn();').should == nil
+  end
+
   it 'should pass through ruby objects across js code' do
     class MyObject
       attr :some_val

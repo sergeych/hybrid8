@@ -143,6 +143,10 @@ module H8
       function? or raise H8::Error, 'JS object is not a function'
       -> (*args) { call *args }
     end
+
+    def to_str
+      to_s
+    end
   end
 
 end

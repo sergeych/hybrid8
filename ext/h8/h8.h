@@ -141,11 +141,17 @@ public:
 			return v8::Int32::New(isolate, FIX2INT(ruby_value));
 		case T_FLOAT:
 			return v8::Number::New(isolate, NUM2DBL(ruby_value));
+		case T_UNDEF:
+			return v8::Undefined(isolate);
+		case T_NIL:
+			return v8::Null(isolate);
 		case T_DATA:
 		case T_OBJECT:
 			return gateObject(ruby_value);
 		default:
-			rb_raise(h8_exception, "can't gate to js: unknown type");
+			VALUE msg = rb_str_new2("can't gate to js (unknown): ");
+			rb_str_append(msg, rb_any_to_s(ruby_value));
+			throw JsError(this, StringValueCStr(msg));
 		}
 		return Undefined(isolate);
 	}
