@@ -14,7 +14,7 @@ h8::RubyGate::RubyGate(H8* _context, VALUE object) :
 	templ->SetInternalFieldCount(2);
 	templ->SetCallAsFunctionHandler(&ObjectCallback);
 
-	templ->SetNamedPropertyHandler(h8::RubyGate::mapGet);
+	templ->SetNamedPropertyHandler(h8::RubyGate::mapGet, h8::RubyGate::mapSet);
 
 	v8::Handle<v8::Object> handle = templ->NewInstance();
 	handle->SetAlignedPointerInInternalField(1, RUBYGATE_ID);
@@ -26,6 +26,14 @@ void h8::RubyGate::mapGet(Local<String> name,
 	RubyGate *rg = RubyGate::unwrap(info.This());
 	assert(rg != 0);
 	rg->getProperty(name, info);
+}
+
+void h8::RubyGate::mapSet(Local<String> name,
+		Local<Value> value,
+		const PropertyCallbackInfo<Value> &info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->setProperty(name, value, info);
 }
 
 void h8::RubyGate::ObjectCallback(
@@ -88,8 +96,22 @@ void h8::RubyGate::getProperty(Local<String> name,
 	VALUE rb_args = rb_ary_new2(2);
 	rb_ary_push(rb_args, ruby_object);
 	rb_ary_push(rb_args, context->to_ruby(name));
-	info.GetReturnValue().Set(name);
 	return rescued_call(rb_args, secure_call, [&] (VALUE res) {
 		info.GetReturnValue().Set(context->to_js(res));
 		});
 }
+
+void h8::RubyGate::setProperty(Local<String> name,
+		Local<Value> value,
+		const PropertyCallbackInfo<Value> &info) {
+	VALUE rb_args = rb_ary_new2(3);
+	rb_ary_push(rb_args, context->to_ruby(value));
+	rb_ary_push(rb_args, ruby_object);
+	VALUE method = context->to_ruby(name);
+	method = rb_str_cat2(method, "=");
+	rb_ary_push(rb_args, method);
+	return rescued_call(rb_args, secure_call, [&] (VALUE res) {
+		info.GetReturnValue().Set(context->to_js(res));
+		});
+}
+

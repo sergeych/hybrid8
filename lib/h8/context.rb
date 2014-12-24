@@ -36,6 +36,7 @@ module H8
       begin
         m = instance.public_method(method)
         if m.owner == instance.class
+          return m.call(*args) if method[-1] == '='
           if m.arity != 0
             return -> (*args) { m.call *args }
           else

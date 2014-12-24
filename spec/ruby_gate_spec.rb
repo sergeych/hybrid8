@@ -130,7 +130,6 @@ describe 'ruby gate' do
       cxt       = H8::Context.new
       cxt[:foo] = t = Test.new
       cxt.eval('foo.rw="hello";')
-      pending
       t.rw.should == 'hello'
       cxt.eval('foo.rw').should == 'hello'
     end
