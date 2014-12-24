@@ -28,5 +28,14 @@ module H8
     def self.eval script, ** kwargs
       Context.new(**kwargs).eval script
     end
+
+    def self.secure_call instance, method, args=nil
+      method = method.to_sym
+      if instance.public_methods(false).include?(method)
+        instance.send method, *args
+      else
+        H8::Undefined
+      end
+    end
   end
 end

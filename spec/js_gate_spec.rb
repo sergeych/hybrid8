@@ -41,7 +41,7 @@ describe 'js_gate' do
     res['bar'].to_i.should == 122
   end
 
-  it 'should retreive JS fieds as properties' do
+  it 'should retreive JS fields as properties' do
     res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
     res.bar.to_i.should == 122
     res.foo.to_s.should == 'bar'
@@ -50,6 +50,9 @@ describe 'js_gate' do
     # cached method check
     res.foo.to_s.should == 'bar'
     res.bar.to_i.should == 122
+
+    res.bad.should == H8::Undefined
+    # res.bad.bad ?
   end
 
   it 'should access arrays' do
@@ -62,6 +65,7 @@ describe 'js_gate' do
       res[1].to_s.should == 'foo'
       res[2].to_s.should == 'bar'
     }
+    res[3].should == H8::Undefined
   end
 
   it 'should eval and keep context alive' do

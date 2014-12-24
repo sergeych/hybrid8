@@ -77,7 +77,87 @@ describe 'ruby gate' do
           }
   end
 
-  it 'should access object properties'
+  it 'should have information about javascript exceptions'
+
+  it 'secure_call should allow only public top level methods' do
+    class A
+      def a
+        return 'a'
+      end
+    end
+
+    class B < A
+      def b val=''
+        'b'+val
+      end
+
+      protected
+
+      def c
+        'c'
+      end
+
+      private
+
+      def d
+        'd'
+      end
+    end
+
+    b = B.new
+    b.a.should == 'a'
+    H8::Context.secure_call(b, :a).should == H8::Undefined
+    H8::Context.secure_call(b, :send).should == H8::Undefined
+    H8::Context.secure_call(b, :define_method).should == H8::Undefined
+    H8::Context.secure_call(b, :b, ['!!!']).should == 'b!!!'
+    H8::Context.secure_call(b, :b).should == 'b'
+  end
+
+  it 'should access object properties' do
+    class Base
+      def base
+        raise "It should not be called"
+      end
+    end
+
+    class Test < Base
+      attr :ro
+      attr_accessor :rw
+
+      def initialize
+        @ro = 'readonly'
+        @rw = 'not initialized'
+      end
+
+      def test_args *args
+        ":#{args.inspect}"
+      end
+
+      protected
+
+      def prot_method
+        raise 'should not be called'
+      end
+
+      private
+
+      def priv_method
+        raise 'should not be called'
+      end
+
+    end
+    cxt       = H8::Context.new
+    cxt[:foo] = Test.new
+    # pending
+    cxt.eval('foo.ro').should == 'readonly'
+    cxt.eval('foo.rw').should == 'not initialized'
+    cxt.eval('foo.base').should == H8::Undefined
+    cxt.eval('foo.send').should == H8::Undefined
+    cxt.eval('foo.prot_method').should == H8::Undefined
+    cxt.eval('foo.priv_method').should == H8::Undefined
+    cxt.eval('foo.test_args').should == ':[]'
+  end
+
   it 'should call object methods'
   it 'should not access Object methods'
   it 'should not access non-public methods'

@@ -12,11 +12,13 @@ using namespace v8;
 using namespace std;
 
 extern VALUE h8_exception, js_exception;
-extern VALUE h8_class;
+extern VALUE context_class;
 extern VALUE value_class;
 extern VALUE ruby_gate_class;
+extern VALUE Rundefined;
 
 extern ID id_is_a;
+extern ID id_safe_call;
 
 namespace h8 {
 

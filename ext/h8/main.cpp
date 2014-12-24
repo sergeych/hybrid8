@@ -12,8 +12,10 @@ VALUE h8_exception, js_exception;
 VALUE context_class;
 VALUE ruby_gate_class;
 VALUE value_class;
+VALUE Rundefined;
 
 ID id_is_a;
+ID id_safe_call;
 
 static void rvalue_free(void* ptr) {
 	delete (JsGate*) ptr;
@@ -156,6 +158,7 @@ void Init_h8(void) {
 	init_v8();
 
 	id_is_a = rb_intern("is_a?");
+	id_safe_call = rb_intern("secure_call");
 
 	VALUE h8 = rb_define_module("H8");
 
@@ -192,4 +195,7 @@ void Init_h8(void) {
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 	js_exception = rb_define_class_under(h8, "JsError", h8_exception);
 
+	VALUE u_class = rb_define_class_under(h8, "UndefinedClass", rb_cObject);
+	Rundefined = rb_funcall(u_class, rb_intern("instance"), 0);
 }
+

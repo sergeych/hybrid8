@@ -13,11 +13,20 @@ h8::RubyGate::RubyGate(H8* _context, VALUE object) :
 	v8::Local<v8::ObjectTemplate> templ = ObjectTemplate::New();
 	templ->SetInternalFieldCount(2);
 	templ->SetCallAsFunctionHandler(&ObjectCallback);
+
+	templ->SetNamedPropertyHandler(h8::RubyGate::mapGet);
+
 	v8::Handle<v8::Object> handle = templ->NewInstance();
 	handle->SetAlignedPointerInInternalField(1, RUBYGATE_ID);
 	Wrap(handle);
 }
 
+void h8::RubyGate::mapGet(Local<String> name,
+		const PropertyCallbackInfo<Value> &info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->getProperty(name, info);
+}
 
 void h8::RubyGate::ObjectCallback(
 		const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -27,36 +36,60 @@ void h8::RubyGate::ObjectCallback(
 	rg->doObjectCallback(args);
 }
 
-VALUE h8::RubyGate::rescue(VALUE me,VALUE exception_object) {
+VALUE h8::RubyGate::rescue_callback(VALUE me, VALUE exception_object) {
 	RubyGate* gate;
 	Data_Get_Struct(me, RubyGate, gate);
 	gate->last_ruby_error = exception_object;
 	return Qnil;
 }
 
-
 VALUE RubyGate::call(VALUE args) {
 	VALUE callable = rb_ary_pop(args);
-	return rb_proc_call (callable, args);
+	return rb_proc_call(callable, args);
+}
+
+VALUE RubyGate::secure_call(VALUE args) {
+	VALUE method = rb_ary_pop(args);
+	VALUE receiver = rb_ary_pop(args);
+	return rb_funcall(context_class, id_safe_call, 3, receiver, method, args);
+}
+
+void h8::RubyGate::throw_js() {
+	Local<v8::Object> error = v8::Exception::Error(
+			context->js("ruby exception")).As<v8::Object>();
+	error->Set(context->js("source"), context->to_js(last_ruby_error));
+	context->getIsolate()->ThrowException(error);
+}
+
+void h8::RubyGate::rescued_call(VALUE rb_args, VALUE (*call)(VALUE),
+		const std::function<void(VALUE)> &block) {
+	last_ruby_error = Qnil;
+	VALUE me = Data_Wrap_Struct(ruby_gate_class, 0, 0, this);
+	VALUE res = rb_rescue((ruby_method) (call), rb_args,
+			(ruby_method) (rescue_callback), me);
+	if (last_ruby_error == Qnil)
+		block(res);
+	else
+		throw_js();
 }
 
 void h8::RubyGate::doObjectCallback(
 		const v8::FunctionCallbackInfo<v8::Value>& args) {
-	last_ruby_error = Qnil;
-	unsigned n = args.Length();
 
-	VALUE rb_args = rb_ary_new2(n+1);
-	for (unsigned i = 0; i < n; i++)
-		rb_ary_push(rb_args, context->to_ruby(args[i]));
+	VALUE rb_args = ruby_args(args, 1);
 	rb_ary_push(rb_args, ruby_object);
-
-	VALUE me = Data_Wrap_Struct(ruby_gate_class, 0, 0, this);
-	VALUE res = rb_rescue((ruby_method)call, rb_args, (ruby_method)rescue, me);
-	if( last_ruby_error == Qnil )
+	return rescued_call(rb_args, call, [&] (VALUE res) {
 		args.GetReturnValue().Set(context->to_js(res));
-	else {
-		Local<v8::Object> error = v8::Exception::Error(context->js("ruby exception")).As<v8::Object>();
-		error->Set(context->js("source"), context->to_js(last_ruby_error));
-		context->getIsolate()->ThrowException(error);
-	}
+	});
+}
+
+void h8::RubyGate::getProperty(Local<String> name,
+		const PropertyCallbackInfo<Value> &info) {
+	VALUE rb_args = rb_ary_new2(2);
+	rb_ary_push(rb_args, ruby_object);
+	rb_ary_push(rb_args, context->to_ruby(name));
+	info.GetReturnValue().Set(name);
+	return rescued_call(rb_args, secure_call, [&] (VALUE res) {
+		info.GetReturnValue().Set(context->to_js(res));
+		});
 }

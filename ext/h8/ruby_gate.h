@@ -2,6 +2,7 @@
 #define __ruby_gate_h
 
 #include <exception>
+#include <functional>
 
 #include "h8.h"
 #include "object_wrap.h"
@@ -40,7 +41,6 @@ public:
 	}
 
 	virtual void free() {
-//        	t("RG::Free");
 		AllocatedResource::free();
 		persistent().ClearWeak();
 		persistent().Reset();
@@ -52,26 +52,55 @@ public:
 	}
 
 	virtual ~RubyGate() {
-//        	t("------------------ Ruby object gate destructor");
 	}
 
 protected:
 	/**
-	 * Callback for rb_rescue and like. Args [0..-2] are call arguments,
+	 * Perform rb_rescue call to 'call' callback, and invoke block with value returned by callback
+	 * unless a ruby exception is caught, in which a correct JsError is thrown.
+	 */
+	void rescued_call(VALUE rb_args, VALUE (*call)(VALUE),const std::function<void(VALUE)> &block);
+
+	/**
+	 * Convert some v8 parameters-like object to ruby arguments array, allocating
+	 * extra slots in array if need
+	 */
+	template <class T>
+	VALUE ruby_args(const T& args, unsigned extras = 0) {
+		unsigned n = args.Length();
+		VALUE rb_args = rb_ary_new2(n+extras);
+		for (unsigned i = 0; i < n; i++)
+			rb_ary_push(rb_args, context->to_ruby(args[i]));
+		return rb_args;
+	}
+
+
+	/**
+	 * Ruby callable callback for rb_rescue and like. Args [0..-2] are call arguments,
 	 * last arg[-1] should be a callable to perform call with (for performance
 	 * reasons it should be the last).
 	 */
 	static VALUE call(VALUE args);
+
+	/**
+	 * Call ruby method via H8::Context#secure_call
+	 */
+	static VALUE secure_call(VALUE args);
+
 	/**
 	 * callback for rb_rescue. Sets last_ruby_error.
 	 */
-	static VALUE rescue(VALUE me,VALUE exception_object);
+	static VALUE rescue_callback(VALUE me,VALUE exception_object);
 
+	void getProperty(Local<String> name, const PropertyCallbackInfo<Value> &info);
 private:
 
 	void doObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 	static void ObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+	static void mapGet(Local<String> name, const PropertyCallbackInfo<Value> &info);
+	void throw_js();
+
 
 	friend class H8;
 

@@ -224,6 +224,9 @@ VALUE h8::JsGate::to_ruby(H8* h8, const Handle<T>& value) {
 	if (v->IsNumber()) {
 		return DBL2NUM(v->NumberValue());
 	}
+	if( v->IsUndefined()) {
+		return Rundefined;
+	}
 	RubyGate *rg = RubyGate::unwrap(v.As<v8::Object>());
 	if( rg ) {
 		return rg->rubyObject();

@@ -117,7 +117,7 @@ module H8
         when object?
           to_h
         else
-          raise Error, "Dont know how to convert #{self}"
+          raise Error, "Dont know how to convert #{self.class}"
       end
     end
 
