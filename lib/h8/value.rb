@@ -136,6 +136,13 @@ module H8
     # @return [H8::Context] context to which this value is bounded
     def context # native method. stub for documentation
     end
+
+    # Convert to Proc instance so it could be used as &block parameter
+    # @raises (H8::Error) if !self.function?
+    def to_proc
+      function? or raise H8::Error, 'JS object is not a function'
+      -> (*args) { call *args }
+    end
   end
 
 end

@@ -178,6 +178,10 @@ describe 'js_gate' do
       fn;
     End
     res.call('foo','bar').should == 'foo:bar'
+    def xx(val, &block)
+      "::" + val + "-" + block.call('hello', 'world')
+    end
+    xx("123", &res.to_proc ).should == "::123-hello:world"
   end
 
   it 'should gate uncaught exceptions from js callbacks' do
