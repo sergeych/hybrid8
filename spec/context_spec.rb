@@ -44,21 +44,22 @@ describe 'context' do
   end
 
   it 'should limit script execution time' do
-    # cxt = H8::Context.new
-    # cxt[:print] = -> (*args) { puts args.join(' ')}
-    # counter = 0
+    cxt = H8::Context.new
+    cxt[:print] = -> (*args) { puts args.join(' ')}
+    counter = 0
     # t = Thread.start {
     #   start = Time.now
     #   counter+=1 while Time.now - start < 1
     # }
-    # c2 = cxt.eval <<-End
-    #   var start = new Date();
-    #   var counter = 0;
-    #   while(new Date().getTime() - start < 1000 ) {
-    #     counter++;
-    #   }
-    #   counter;
-    # End
+    script = <<-End
+      var start = new Date();
+      var counter = 0;
+      while(new Date().getTime() - start < 1000 ) {
+        counter++;
+      }
+      counter;
+    End
+    c2 = cxt.eval script, timeout: 0.2
     # t.join
     # p c2
     # p counter

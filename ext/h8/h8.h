@@ -101,9 +101,9 @@ public:
 
 	Handle<Value> eval(const char* script_utf,int max_time=0);
 
-	VALUE eval_to_ruby(const char* script_utf) {
+	VALUE eval_to_ruby(const char* script_utf,int timeout=0) {
 		// TODO: throw ruby exception on error
-		return to_ruby(eval(script_utf));
+		return to_ruby(eval(script_utf,timeout));
 	}
 
 	Handle<Context> getContext() {

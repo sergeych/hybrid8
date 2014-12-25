@@ -19,8 +19,8 @@ module H8
 
     # Execute a given script on the current context
     # @return [Value] wrapped object returned by the script
-    def eval script
-      # native function. this stub is for documenting only
+    def eval script, timeout: 0
+      _eval script, (timeout/1000).to_i
     end
 
     # Exectue script in a new context with optionally set vars. @see H8#set_all

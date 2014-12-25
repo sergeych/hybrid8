@@ -23,6 +23,22 @@ call #to_ruby)
 - Uncaught ruby exceptions are thrown as javascript exceptions in javascript code. The same,
 uncaught javascript exceptions raise ruby error in ruby code.
 
+## Main difference from therubyracer
+
+- correct and accurate object tracking in both JS and Ruby VMs, GC aware.
+
+- passed thru objects and exceptions in js -> ruby -> js -> ruby chains are usually kept unchanged,
+e.g. wrapped in one language then unwrapped when passed to the original language
+
+- Not Yet: source information in uncaught exception in js
+
+- Not Yet: script execution time limit
+
+- Script is executed in the calling ruby thread whithout unblocking it (for the sake of
+effectiveness). If we would release GIL and reqcquire it, it would take more time. And there is no
+multithreading support yet (this one might be added soon).
+
+
 ## Installation
 
 ### Prerequisites
