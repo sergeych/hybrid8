@@ -32,8 +32,6 @@ e.g. wrapped in one language then unwrapped when passed to the original language
 
 - Not Yet: source information in uncaught exception in js
 
-- Not Yet: script execution time limit
-
 - Script is executed in the calling ruby thread without unblocking it (for the sake of
 effectiveness). If we would release GIL and reacquire it, it would take more time. And there is no
 multithreading support yet (this one might be added soon).

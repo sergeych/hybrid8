@@ -19,6 +19,31 @@ module H8
 
   class UndefinedClass
     include Singleton
+
+    def blank?
+      true
+    end
+
+    def undefined?
+      true
+    end
+
+    def empty?
+      true
+    end
+
+    def present?
+      false
+    end
+
+    def !
+      true
+    end
+
+    def == x
+      x.is_a?(H8::UndefinedClass) || x == false
+    end
+
   end
 
   # The constant representing 'undefined' value in Javascript

@@ -11,7 +11,7 @@
 using namespace v8;
 using namespace std;
 
-extern VALUE h8_exception, js_exception;
+extern VALUE h8_exception, js_exception, js_timeout_exception;
 extern VALUE context_class;
 extern VALUE value_class;
 extern VALUE ruby_gate_class;
@@ -50,7 +50,7 @@ public:
 	/**
 	 * Call it with a proper exception class and be careful - after this call no code will be executed!
 	 */
-	void raise();
+	virtual void raise();
 
 	Local<Message> message() const;
 
@@ -66,6 +66,12 @@ protected:
 	H8 *h8;
 	v8::Persistent<v8::Message, v8::CopyablePersistentTraits<v8::Message>> _message;
 	v8::Persistent<v8::Value, v8::CopyablePersistentTraits<v8::Value>> _exception;
+};
+
+class JsTimeoutError : public JsError {
+public:
+	JsTimeoutError(H8* h8) : JsError(h8, NULL) {}
+	virtual void raise();
 };
 
 class H8 {
@@ -99,7 +105,15 @@ public:
 		persistent_context.Reset(isolate, context);
 	}
 
-	Handle<Value> eval(const char* script_utf,int max_time=0);
+	/**
+	 * Evaluate javascript.
+	 *
+	 * \param script_utf the null-terminated script string in utf8 endcoding
+	 * \param max_ms if set, then script maximum execution time will be limited
+	 * 				 to this value, JsTimeoutError will be thrown if exceeded
+	 * \return the value returned by the script.
+	 */
+	Handle<Value> eval(const char* script_utf,unsigned max_ms=0);
 
 	VALUE eval_to_ruby(const char* script_utf,int timeout=0) {
 		// TODO: throw ruby exception on error

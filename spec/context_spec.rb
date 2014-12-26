@@ -43,27 +43,35 @@ describe 'context' do
     }).to raise_error(H8::Error)
   end
 
+  it 'should provide reasonable undefined logic' do
+    raise "bad !undefined" if !!H8::Undefined
+    H8::Undefined.should_not == true
+    H8::Undefined.should == false
+    H8::Undefined.should_not == 11
+    (H8::Undefined==nil).should == false
+    H8::Undefined.should be_undefined
+    (!H8::Undefined).should == true
+  end
+
   it 'should limit script execution time' do
     cxt = H8::Context.new
-    cxt[:print] = -> (*args) { puts args.join(' ')}
-    counter = 0
-    # t = Thread.start {
-    #   start = Time.now
-    #   counter+=1 while Time.now - start < 1
-    # }
+    # cxt[:print] = -> (*args) { puts args.join(' ')}
     script = <<-End
       var start = new Date();
+      var last = null;
       var counter = 0;
-      while(new Date().getTime() - start < 1000 ) {
+      while((last=new Date().getTime()) - start < 1000 ) {
         counter++;
       }
       counter;
     End
-    c2 = cxt.eval script, timeout: 0.2
-    # t.join
-    # p c2
-    # p counter
-
+    # end
+    t = Time.now
+    expect( -> {
+      c2 = cxt.eval script, timeout: 0.2
+    }).to raise_error(H8::TimeoutError)
+    (Time.now - t).should < 0.25
+    cxt.eval('(last-start)/1000').should < 250
   end
 
 end

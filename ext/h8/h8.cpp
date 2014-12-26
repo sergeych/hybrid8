@@ -1,3 +1,8 @@
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+
 #include "h8.h"
 #include "ruby_gate.h"
 
@@ -32,6 +37,10 @@ void h8::JsError::raise() {
 	}
 }
 
+void h8::JsTimeoutError::raise() {
+	rb_raise(js_timeout_exception, "timeout expired");
+}
+
 Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 	if ( Qtrue == rb_funcall(ruby_value, id_is_a, 1, value_class)) {
 		JsGate *gate;
@@ -51,7 +60,7 @@ void h8::H8::ruby_mark_gc() const {
 		((AllocatedResource*) x)->rb_mark_gc();
 }
 
-v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,int max_time) {
+v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,unsigned max_ms) {
 	v8::EscapableHandleScope escape(isolate);
 	Local<Value> result;
 
@@ -66,7 +75,23 @@ v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,int max_time) {
 		try_catch.throwIfCaught();
 		result = Undefined(isolate);
 	} else {
-		result = script->Run();
+		result = Undefined(isolate);
+		if( max_ms > 0 ) {
+			std::mutex m;
+			std::condition_variable cv;
+			std::thread thr( [&] {
+				std::unique_lock<std::mutex> lock(m);
+				if( std::cv_status::timeout == cv.wait_for(lock, std::chrono::milliseconds(max_ms) ) ) {
+					isolate->TerminateExecution();
+				}
+			});
+			script->Run();
+			cv.notify_all();
+			thr.join();
+		}
+		else {
+			result = script->Run();
+		}
 		try_catch.throwIfCaught();
 	}
 	return escape.Escape(result);

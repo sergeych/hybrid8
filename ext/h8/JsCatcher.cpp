@@ -15,7 +15,7 @@ JsCatcher::JsCatcher(H8* h8) : h8(h8), v8::TryCatch(h8->getIsolate()) {}
 void JsCatcher::throwIfCaught() {
 	if( HasCaught() ) {
 		if( !CanContinue() && HasTerminated() ) {
-			h8->getIsolate()->CancelTerminateExecution();
+			throw JsTimeoutError(h8);
 		}
 		throw JsError(h8, Message(), Exception());
 	}

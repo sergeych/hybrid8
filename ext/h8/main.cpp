@@ -8,7 +8,7 @@ extern "C" {
 void Init_h8(void);
 }
 
-VALUE h8_exception, js_exception;
+VALUE h8_exception, js_exception, js_timeout_exception;
 VALUE context_class;
 VALUE ruby_gate_class;
 VALUE value_class;
@@ -121,7 +121,7 @@ inline H8* rc(VALUE self) {
 
 static VALUE context_eval(VALUE self, VALUE script,VALUE timeout) {
 	return protect_ruby([&] {
-		H8* cxt = rc(self);
+		H8* cxt = rc(self);//		v8::Locker l(cxt->getIsolate());
 		H8::Scope s(cxt);
 		return cxt->eval_to_ruby(StringValueCStr(script), FIX2INT(timeout));
 	});
@@ -198,6 +198,7 @@ void Init_h8(void) {
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 	js_exception = rb_define_class_under(h8, "JsError", h8_exception);
+	js_timeout_exception = rb_define_class_under(h8, "TimeoutError", h8_exception);
 
 	VALUE u_class = rb_define_class_under(h8, "UndefinedClass", rb_cObject);
 	Rundefined = rb_funcall(u_class, rb_intern("instance"), 0);

@@ -35,6 +35,11 @@ describe 'js_gate' do
     res.should be_kind_of(String)
   end
 
+  it 'should return undefined and null' do
+    H8::Context.eval('undefined').should == H8::Undefined
+    H8::Context.eval('null').should == nil
+  end
+
   it 'should retreive JS fieds as indexes' do
     res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
     res['foo'].to_s.should == 'bar'
