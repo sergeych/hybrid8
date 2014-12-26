@@ -198,7 +198,7 @@ void Init_h8(void) {
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 	js_exception = rb_define_class_under(h8, "JsError", h8_exception);
-	js_timeout_exception = rb_define_class_under(h8, "TimeoutError", h8_exception);
+	js_timeout_exception = rb_define_class_under(h8, "TimeoutError", js_exception);
 
 	VALUE u_class = rb_define_class_under(h8, "UndefinedClass", rb_cObject);
 	Rundefined = rb_funcall(u_class, rb_intern("instance"), 0);

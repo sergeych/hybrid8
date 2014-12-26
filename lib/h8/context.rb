@@ -17,13 +17,16 @@ module H8
       set_all name => value
     end
 
-    # Execute a given script on the current context
+    # Execute a given script on the current context with optionally limited execution time.
+    #
+    # @param [Float] timeout if is not 0 then maximum execution time in seconds
     # @return [Value] wrapped object returned by the script
+    # @raise [H8::TimeoutError] if the timeout was set and expired
     def eval script, timeout: 0
       _eval script, (timeout*1000).to_i
     end
 
-    # Exectue script in a new context with optionally set vars. @see H8#set_all
+    # Execute script in a new context with optionally set vars. @see H8#set_all
     # @return [Value] wrapped object returned by the script
     def self.eval script, **kwargs
       Context.new(** kwargs).eval script
