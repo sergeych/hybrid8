@@ -19,7 +19,7 @@ describe 'ruby gate' do
   it 'should gate callables with varargs' do
     cxt      = H8::Context.new
     cxt[:fn] = -> (*args) {
-      args.reduce(0){|all,x| all+x }
+      args.reduce(0) { |all, x| all+x }
     }
 
     cxt.eval('fn(11, 22, 100);').should == 133
@@ -111,9 +111,9 @@ describe 'ruby gate' do
       attr_accessor :rw
 
       def initialize
-        @ro = 'readonly'
-        @rw = 'not initialized'
-        @val = 'init[]'
+        @ro           = 'readonly'
+        @rw           = 'not initialized'
+        @val          = 'init[]'
         self.do_throw = false
       end
 
@@ -170,23 +170,70 @@ describe 'ruby gate' do
       cxt.eval('foo.rw').should == 'hello'
     end
 
-    it 'should access index methods'
+    context 'no interceptors' do
+      class Test2 < Base
+        attr :ro
+        attr_accessor :rw
 
-    it 'should add and access indexed attributes' do
+        def initialize
+          @ro = 'readonly'
+          @rw = 'not initialized'
+        end
+
+        def test_args *args
+          args.join('-')
+        end
+
+        protected
+
+        def prot_method
+          raise 'should not be called'
+        end
+
+        private
+
+        def priv_method
+          raise 'should not be called'
+        end
+      end
+
+      it 'should access object properties and methods' do
+        cxt       = H8::Context.new
+        cxt[:foo] = Test2.new
+        cxt.eval('foo.ro').should == 'readonly'
+        cxt.eval('foo.rw').should == 'not initialized'
+        cxt.eval('foo.base').should == H8::Undefined
+        cxt.eval('foo.send').should == H8::Undefined
+        cxt.eval('foo.prot_method').should == H8::Undefined
+        cxt.eval('foo.priv_method').should == H8::Undefined
+        cxt.eval('foo.test_args').should be_kind_of(Proc)
+        cxt.eval('foo.test_args("hi", "you")').should == 'hi-you'
+      end
+
+      it 'should set ruby properties' do
+        cxt       = H8::Context.new
+        cxt[:foo] = t = Test2.new
+        cxt.eval('foo.rw="hello";')
+        t.rw.should == 'hello'
+        cxt.eval('foo.rw').should == 'hello'
+      end
+    end
+
+    it 'should add and intercept property access' do
       # pending
-      t = Test.new
+      t          = Test.new
       t.do_throw = true
-      cxt = H8::Context.new t: t
+      cxt        = H8::Context.new t: t
       cxt.eval("t['foo'];").should == 'init[]'
-      expect(->{cxt.eval("t['foo1'];")}).to raise_error(RuntimeError)
+      expect(-> { cxt.eval("t['foo1'];") }).to raise_error(RuntimeError)
       cxt.eval("t['foo']='bar'");
       # p t['foo']
       # p cxt.eval "t['foo'] = 'bar';"
     end
 
     it 'should access plain arrays (provide numeric indexes)' do
-      cxt   = H8::Context.new
-      array = [10, 20, 30]
+      cxt     = H8::Context.new
+      array   = [10, 20, 30]
       cxt[:a] = array
       cxt.eval('a.length').should == 3
       cxt.eval('a[1]').should == 20
@@ -195,16 +242,13 @@ describe 'ruby gate' do
     end
 
     it 'should access plain hashes' do
-      cxt   = H8::Context.new
-      h = {'one' => 2 }
+      cxt     = H8::Context.new
+      h       = { 'one' => 2 }
       cxt[:h] = h
       cxt.eval("h['one']").should == 2
       eval("h['one']=1;")
       h['one'].should == 1
     end
-
-    it 'should allow adding poroperties to ruby objects'
-
 
     it 'should gate classes'
   end

@@ -124,6 +124,17 @@ public:
 		return h8->to_ruby(object()->Get(v8_name));
 	}
 
+	/**
+	 * Set JS object attribute to ruby value
+	 *
+	 */
+	void set_attribute(VALUE name, VALUE value) {
+		H8::Scope scope(h8);
+		Local<Value> v8_name = v8::String::NewFromUtf8(isolate(),
+				StringValueCStr(name));
+		object()->Set(v8_name, h8->to_js(value));
+	}
+
 	VALUE get_index(VALUE index) {
 		H8::Scope scope(h8);
 		return h8->to_ruby(object()->Get(NUM2INT(index)));

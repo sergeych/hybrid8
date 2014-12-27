@@ -23,19 +23,36 @@ module H8
     #
     # @return [H8::Value] instance, which is .undefined? if does not exist
     def [] name_index
-      name_index.is_a?(Fixnum) ? _get_index(name_index) : _get_attr(name_index)
+      name_index.is_a?(Fixnum) ? _get_index(name_index) : _get_attr(name_index.to_s)
+    end
+
+    # Set js object attribute by either name or index (should be Fixnum instance). It always
+    # return H8::Value instance, check it to (not) be undefined? to see if there is such attribute
+    #
+    # @return [H8::Value] instance, which is .undefined? if does not exist
+    def []= name_index, value
+      # name_index.is_a?(Fixnum) ? _get_index(name_index) : _get_attr(name_index.to_s)
+      _set_attr(name_index.to_s, value)
     end
 
     # Optimized JS member access. Support class members and member functions - will call them
     # automatically. Use val['attr'] to get callable instead
     def method_missing(method_sym, *arguments, &block)
       name = method_sym.to_s
-      instance_eval <<-End
-              def #{name} *args, **kwargs
-                res = _get_attr('#{name}')
-                (res.is_a?(H8::Value) && res.function?) ? res.apply(self,*args) : res
-              end
-      End
+      if name[-1] != '='
+        instance_eval <<-End
+                def #{name} *args, **kwargs
+                  res = _get_attr('#{name}')
+                  (res.is_a?(H8::Value) && res.function?) ? res.apply(self,*args) : res
+                end
+        End
+      else
+        instance_eval <<-End
+                def #{name} value
+                  _set_attr('#{name[0..-2]}', value)
+                end
+        End
+      end
       send method_sym, *arguments
     end
 

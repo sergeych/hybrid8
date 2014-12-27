@@ -237,6 +237,24 @@ describe 'js_gate' do
     }).to raise_error(MyException)
   end
 
-  it 'should dynamically add and remove properties to js objects'
+  it 'should dynamically add and remove properties to js objects' do
+    cxt = H8::Context.new
+    jobj = cxt.eval('jobj = {one: 1};')
+    jobj.one.should == 1
+    jobj['one'].should == 1
+    jobj[:one].should == 1
+    jobj.one = 101
+    cxt.eval('jobj.one').should == 101
+    jobj[:one].should == 101
+    jobj.two = 2
+    jobj[:two].should == 2
+    cxt.eval('jobj.two').should == 2
+    jobj[:three] = 3
+    jobj.three.should == 3
+    cxt.eval('jobj.three').should == 3
+    jobj[101] = 202
+    jobj[101].should == 202
+    cxt.eval('jobj[101]').should == 202
+  end
 
 end

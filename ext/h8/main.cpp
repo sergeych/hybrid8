@@ -79,6 +79,13 @@ static VALUE rvalue_get_index(VALUE self, VALUE index) {
 	return rv(self)->get_index(index);
 }
 
+static VALUE rvalue_set_attr(VALUE self, VALUE name, VALUE value) {
+	return protect_ruby([&] {
+		rv(self)->set_attribute(name, value);
+		return Qnil;
+	});
+}
+
 static VALUE rvalue_is_string(VALUE self) {
 	return rv(self)->is_string();
 }
@@ -191,6 +198,8 @@ void Init_h8(void) {
 			1);
 	rb_define_method(value_class, "_get_index", (ruby_method) rvalue_get_index,
 			1);
+	rb_define_method(value_class, "_set_attr", (ruby_method) rvalue_set_attr,
+			2);
 	rb_define_method(value_class, "_call", (ruby_method) rvalue_call, 1);
 	rb_define_method(value_class, "_apply", (ruby_method) rvalue_apply, 2);
 	rb_define_method(value_class, "context",
