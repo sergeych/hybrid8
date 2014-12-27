@@ -24,42 +24,40 @@ $CXXFLAGS += cxx11flag unless $CXXFLAGS.include?(cxx11flag)
 abort 'missing malloc()' unless have_func 'malloc'
 abort 'missing free()' unless have_func 'free'
 
-# Give it a name
-extension_name = 'h8'
+begin
 
-ok = true
+  # Give it a name
+  extension_name = 'h8'
 
-chk_headers = ['include/v8.h']
-chk_libs = %w(v8_base v8_libbase v8_libplatform v8_snapshot icudata icui18n icuuc)
+  chk_headers = ['include/v8.h']
+  chk_libs    = %w(v8_base v8_libbase v8_libplatform v8_snapshot icudata icui18n icuuc)
 
-case RbConfig::CONFIG['target_os']
-when /darwin/
-  dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/out/native')
-  CONFIG['CXXFLAGS'] += ' --std=c++11'
-else
-  # example linux package https://github.com/porzione/v8-git-debian
-  dir_config('v8', '/usr/include/libv8-3.31', '/usr/lib/libv8-3.31')
-  # force static, but system icu
-  $LOCAL_LIBS = chk_libs.reject{|l| l.match /^icu/ }.map{|l| "-l#{l}"}.join(" ")
-end
-
-dir_config(extension_name)
-
-chk_headers.each do |h|
-  unless have_header(h)
-    $stderr.puts "can't find v8 header '#{h}', install libv8 3.31+ first"
-    ok = false
-    break
+  case RbConfig::CONFIG['target_os']
+    when /darwin/
+      v8_path = ENV['V8_3_31_ROOT'] or raise "Please give me export V8_3_31_ROOT=..."
+      # dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/out/native')
+      dir_config('v8', v8_path, v8_path+'/out/native')
+      CONFIG['CXXFLAGS'] += ' --std=c++11'
+    else
+      # example linux package https://github.com/porzione/v8-git-debian
+      dir_config('v8', '/usr/include/libv8-3.31', '/usr/lib/libv8-3.31')
+      # force static, but system icu
+      $LOCAL_LIBS = chk_libs.reject { |l| l.match /^icu/ }.map { |l| "-l#{l}" }.join(" ")
   end
-end
 
-chk_libs.each do |lib|
-  unless have_library(lib)
-    $stderr.puts "can't find v8 lib '#{lib}'"
-    ok = false
-    break
+  dir_config(extension_name)
+
+  chk_headers.each do |h|
+    unless have_header(h)
+      raise "can't find v8 header '#{h}', install libv8 3.31+ first"
+    end
   end
-end
+
+  chk_libs.each do |lib|
+    unless have_library(lib)
+      raise "can't find v8 lib '#{lib}'"
+    end
+  end
 
 # This test is actually due to a Clang 3.3 shortcoming, included in OS X 10.9,
 # fixed in Clang 3.4:
@@ -70,10 +68,11 @@ end
 #   $CFLAGS += ' -Wall -W -O3 -g'
 # end
 
-if ok
-  # create_makefile('h8/h8')
+# create_makefile('h8/h8')
   create_makefile(extension_name)
-else
+rescue
+  $stderr.puts "*********************************************************************"
+  $stderr.puts "\n#{$!}\n\n"
   $stderr.puts "*********************************************************************"
   $stderr.puts "Your compiler was unable to link to all necessary libraries"
   $stderr.puts "Please install all prerequisites first"

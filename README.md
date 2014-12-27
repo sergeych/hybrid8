@@ -1,7 +1,8 @@
 # Hybrid8, aka H8
 
-_Warning_ this gem has yet limited functionality and is under main development. Versions suitable
-for an open beta test will start from 0.1.*.
+_Warning_ this gem functionality is almost complete but it lacks of testing and some features
+(see below). This is a working (or better say, test passing) alpha. Beta suitable versions
+will start from 0.1.*.
 
 Therubyracer gem alternative to effectively work with ruby 2.1+ in multithreaded environment in an
 effective and GC-safe way. Should be out of the box replacement for most scenarios.
@@ -23,7 +24,10 @@ call #to_ruby)
 - Uncaught ruby exceptions are thrown as javascript exceptions in javascript code. The same,
 uncaught javascript exceptions raise ruby error in ruby code.
 
-## Main difference from therubyracer
+## Main difference from therubyracer/features not ready
+
+*This version is not (yet?) thread safe*. For the sake of effectiveness, do not access same
+H8::Context and its returned values from concurrent threads. Use Mutexes!
 
 - correct and accurate object tracking in both JS and Ruby VMs, GC aware.
 
@@ -36,7 +40,6 @@ e.g. wrapped in one language then unwrapped when passed to the original language
 effectiveness). If we would release GIL and reacquire it, it would take more time. And there is no
 multithreading support yet (this one might be added soon).
 
-
 ## Installation
 
 ### Prerequisites
@@ -48,14 +51,28 @@ may not find you installation, contact me if you have problems, I'll tune it up.
 
 The working process:
 
-* install from sources 3.31.77 (or try newer)
+install v8 from sources 3.31.77 (or try newer), then execute:
 
     gclient update
     export CXXFLAGS='-std=c++11 -stdlib=libc++ -mmacosx-version-min=10.9'
     export LDFLAGS=-lc++
     make native
+    exportexport V8_3_31_ROOT=`pwd` # or somehow else set it
 
-Note that exporting symbols is a hack that may not be in need anymore.
+Note that exporting symbols is a hack that may not be in need anymore. After that the gem should
+install normally.
+
+#### Debian and like
+
+Install first a valid v8 version. We provide a ready package!
+
+    sudo apt-get install libv8-3.31-dev
+
+It should install prerequisites, if not, manually install
+
+   sudo apt-get install libicu-dev
+
+You might also need to install GMP.
 
 ### Setting up
 
