@@ -57,7 +57,7 @@ install v8 from sources 3.31.77 (or try newer), then execute:
     export CXXFLAGS='-std=c++11 -stdlib=libc++ -mmacosx-version-min=10.9'
     export LDFLAGS=-lc++
     make native
-    exportexport V8_3_31_ROOT=`pwd` # or somehow else set it
+    export V8_3_31_ROOT=`pwd` # or somehow else set it
 
 Note that exporting symbols is a hack that may not be in need anymore. After that the gem should
 install normally.
@@ -70,7 +70,7 @@ Install first a valid v8 version. We provide a ready package!
 
 It should install prerequisites, if not, manually install
 
-   sudo apt-get install libicu-dev
+    sudo apt-get install libicu-dev
 
 You might also need to install GMP.
 
