@@ -37,6 +37,7 @@ module H8
     # @raise [H8::TimeoutError] if the timeout was set and expired
     def eval script, max_time: 0, timeout: 0
       timeout = max_time * 1000 if max_time > 0
+      yield(self) if block_given?
       _eval script, timeout.to_i
     end
 

@@ -16,6 +16,17 @@ describe 'ruby gate' do
     GC.start
   end
 
+  it 'should allow edit context on yield' do
+    cxt      = H8::Context.new
+    cxt[:fn] = -> (a, b) {
+      a + b
+    }
+    res = cxt.eval("fn(11, 22);") { |cxt|
+      cxt[:fn] = -> (a,b) { a - b }
+    }
+    res.to_i.should == -11
+  end
+
   it 'should gate callables with varargs' do
     cxt      = H8::Context.new
     cxt[:fn] = -> (*args) {
