@@ -1,11 +1,21 @@
 # Hybrid8, aka H8
 
-_Warning_ this gem functionality is almost complete but it lacks of testing and some features
-(see below). This is a working (or better say, test passing) alpha. Beta suitable versions
-will start from 0.1.*.
+_Warning_ this gem is a beta at the moment. I will be pleased if you try it and help me debug it,
+but it is not yet production stable.
 
-Therubyracer gem alternative to effectively work with ruby 2.1+ in multithreaded environment in an
-effective and GC-safe way. Should be out of the box replacement for most scenarios.
+This gem was intended to replace therubyracer for many reasons:
+
+* therubyracer has critical bugs that are not fixed for a long time, under load it produces
+numerous frequent crashes.
+
+* therubyracer still uses antique version of V8, H8 uses the latest 3.31 branch
+
+* H8 is designed to provide very tight and effective integration of two allocation systems and
+object models, passing the same objects between different systems wrapping and unwrapping them
+rather than copying and changing
+
+* We hope that by the cost non significant changes we will provide faster execution. And might v8
+modern branch will help us with it ;)
 
 Special features:
 
@@ -26,19 +36,25 @@ uncaught javascript exceptions raise ruby error in ruby code.
 
 ## Main difference from therubyracer/features not ready
 
-*This version is not (yet?) thread safe*. For the sake of effectiveness, do not access same
-H8::Context and its returned values from concurrent threads. Use Mutexes!
+- This version is not (yet?) thread safe*. For the sake of effectiveness, do not access same
+H8::Context and its returned values from concurrent threads. Use Mutexes if need.
+
+The pity thing is, if we will Lock() the context on each call to it, the performance degradation
+will be notable and no matter whether you need threading with it. So, if you really need it, you
+wrap it with Mutex or whatever you want, without slowing down all the rest of us.
+
+- Script is executed in the calling ruby thread without unblocking it (other ruby threads can not
+ perform on this core while javascript code runs).
+
+The same performance reason. If we release gvl on script start and reacquire it every time the ruby
+object, callback, class, whatever is referenced from JS, the execution will considerably degrade. As
+this gem is intended to let javascript/coffescript tightly integrate with ruby objects we have
+decided to not to slow down everything. If it is a problem, lets discuss it.
 
 - correct and accurate object tracking in both JS and Ruby VMs, GC aware.
 
-- passed thru objects and exceptions in js -> ruby -> js -> ruby chains are usually kept unchanged,
-e.g. wrapped in one language then unwrapped when passed to the original language
-
 - Not Yet: source information in uncaught exception in js
 
-- Script is executed in the calling ruby thread without unblocking it (for the sake of
-effectiveness). If we would release GIL and reacquire it, it would take more time. And there is no
-multithreading support yet (this one might be added soon).
 
 ## Installation
 
