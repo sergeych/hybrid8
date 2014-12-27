@@ -94,13 +94,20 @@ protected:
 
 	void getProperty(Local<String> name, const PropertyCallbackInfo<Value> &info);
 	void setProperty(Local<String> name, Local<Value> value,const PropertyCallbackInfo<Value> &info);
+
+	void getIndex(uint32_t index, const PropertyCallbackInfo<Value> &info);
+	void setIndex(uint32_t index, Local<Value> value,const PropertyCallbackInfo<Value> &info);
 private:
 
 	void doObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 	static void ObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 	static void mapGet(Local<String> name, const PropertyCallbackInfo<Value> &info);
 	static void mapSet(Local<String> name, Local<Value> value,const PropertyCallbackInfo<Value> &info);
+
+	static void indexGet(uint32_t index, const PropertyCallbackInfo<Value> &info);
+	static void indexSet(uint32_t index, Local<Value> value, const PropertyCallbackInfo<Value> &info);
 
 	void throw_js();
 

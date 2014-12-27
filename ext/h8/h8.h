@@ -159,6 +159,8 @@ public:
 			return v8::Undefined(isolate);
 		case T_NIL:
 			return v8::Null(isolate);
+		case T_ARRAY:
+		case T_HASH:
 		case T_DATA:
 		case T_OBJECT:
 			return gateObject(ruby_value);

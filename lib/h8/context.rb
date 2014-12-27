@@ -33,13 +33,17 @@ module H8
     end
 
     # Secure gate for JS to securely access ruby class properties (methods with no args)
-    # and methods.
+    # and methods. This class implements security policy! Overriding this method could
+    # breach security and provide full access to ruby object trees.
+    #
+    # It has very complex logic so the security model update should be done somehow
+    # else.
     def self.secure_call instance, method, args=nil
       method = method.to_sym
       begin
         m = instance.public_method(method)
         if m.owner == instance.class
-          return m.call(*args) if method[-1] == '='
+          return m.call(*args) if method[0] == '[' || method[-1] == '='
           if m.arity != 0
             return -> (*args) { m.call *args }
           else
@@ -47,8 +51,25 @@ module H8
           end
         end
       rescue NameError
+        # No exact method, calling []/[]= if any
+        method, args = if method[-1] == '='
+                         [:[]=, [method[0..-2].to_s, args[0]] ]
+                       else
+                         [:[], [method.to_s]]
+                       end
+        begin
+          m = instance.public_method(method)
+          if m.owner == instance.class
+            return m.call(*args)
+          end
+        rescue NameError
+          # It means there is no [] or []=, e.g. undefined
+        end
       end
       H8::Undefined
     end
+
+    private
+
   end
 end

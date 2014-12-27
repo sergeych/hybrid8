@@ -14,7 +14,8 @@ h8::RubyGate::RubyGate(H8* _context, VALUE object) :
 	templ->SetInternalFieldCount(2);
 	templ->SetCallAsFunctionHandler(&ObjectCallback);
 
-	templ->SetNamedPropertyHandler(h8::RubyGate::mapGet, h8::RubyGate::mapSet);
+	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
+	templ->SetIndexedPropertyHandler(RubyGate::indexGet,RubyGate::indexSet);
 
 	v8::Handle<v8::Object> handle = templ->NewInstance();
 	handle->SetAlignedPointerInInternalField(1, RUBYGATE_ID);
@@ -34,6 +35,21 @@ void h8::RubyGate::mapSet(Local<String> name,
 	RubyGate *rg = RubyGate::unwrap(info.This());
 	assert(rg != 0);
 	rg->setProperty(name, value, info);
+}
+
+void h8::RubyGate::indexGet(uint32_t index,
+		const PropertyCallbackInfo<Value> &info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->getIndex(index, info);
+}
+
+void h8::RubyGate::indexSet(uint32_t index,
+		Local<Value> value,
+		const PropertyCallbackInfo<Value> &info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->setIndex(index, value, info);
 }
 
 void h8::RubyGate::ObjectCallback(
@@ -110,6 +126,30 @@ void h8::RubyGate::setProperty(Local<String> name,
 	VALUE method = context->to_ruby(name);
 	method = rb_str_cat2(method, "=");
 	rb_ary_push(rb_args, method);
+	return rescued_call(rb_args, secure_call, [&] (VALUE res) {
+		info.GetReturnValue().Set(context->to_js(res));
+		});
+}
+
+void h8::RubyGate::getIndex(uint32_t index,
+		const PropertyCallbackInfo<Value> &info) {
+	VALUE rb_args = rb_ary_new2(3);
+	rb_ary_push(rb_args, INT2FIX(index));
+	rb_ary_push(rb_args, ruby_object);
+	rb_ary_push(rb_args, rb_str_new2("[]"));
+	return rescued_call(rb_args, secure_call, [&] (VALUE res) {
+		info.GetReturnValue().Set(context->to_js(res));
+		});
+}
+
+void h8::RubyGate::setIndex(uint32_t index,
+		Local<Value> value,
+		const PropertyCallbackInfo<Value> &info) {
+	VALUE rb_args = rb_ary_new2(4);
+	rb_ary_push(rb_args, INT2FIX(index));
+	rb_ary_push(rb_args, context->to_ruby(value));
+	rb_ary_push(rb_args, ruby_object);
+	rb_ary_push(rb_args, rb_str_new2("[]="));
 	return rescued_call(rb_args, secure_call, [&] (VALUE res) {
 		info.GetReturnValue().Set(context->to_js(res));
 		});

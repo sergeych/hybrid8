@@ -237,5 +237,6 @@ describe 'js_gate' do
     }).to raise_error(MyException)
   end
 
+  it 'should dynamically add and remove properties to js objects'
 
 end

@@ -103,7 +103,8 @@ module H8
       values.each
     end
 
-    # Tries to convert wrapped JS object to ruby primitive (Fixed, String, Float, Array, Hash)
+    # Tries to convert wrapped JS object to ruby primitive (Fixed, String, Float, Array, Hash).
+    # Note that this conversion looses information about source javascript class (if any)
     def to_ruby
       case
         when integer?

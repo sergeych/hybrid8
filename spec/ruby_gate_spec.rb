@@ -102,6 +102,8 @@ describe 'ruby gate' do
       def base
         raise "It should not be called"
       end
+
+      attr_accessor :do_throw
     end
 
     class Test < Base
@@ -111,10 +113,26 @@ describe 'ruby gate' do
       def initialize
         @ro = 'readonly'
         @rw = 'not initialized'
+        @val = 'init[]'
+        self.do_throw = false
       end
 
       def test_args *args
         args.join('-')
+      end
+
+      def [] val
+        if val != 'foo'
+          raise('not foo') if do_throw
+          H8::Undefined
+        else
+          @val
+        end
+      end
+
+      def []= val, x
+        val != 'foo' && do_throw and raise "not foo"
+        @val = x
       end
 
       protected
@@ -151,6 +169,42 @@ describe 'ruby gate' do
       t.rw.should == 'hello'
       cxt.eval('foo.rw').should == 'hello'
     end
+
+    it 'should access index methods'
+
+    it 'should add and access indexed attributes' do
+      # pending
+      t = Test.new
+      t.do_throw = true
+      cxt = H8::Context.new t: t
+      cxt.eval("t['foo'];").should == 'init[]'
+      expect(->{cxt.eval("t['foo1'];")}).to raise_error(RuntimeError)
+      cxt.eval("t['foo']='bar'");
+      # p t['foo']
+      # p cxt.eval "t['foo'] = 'bar';"
+    end
+
+    it 'should access plain arrays (provide numeric indexes)' do
+      cxt   = H8::Context.new
+      array = [10, 20, 30]
+      cxt[:a] = array
+      cxt.eval('a.length').should == 3
+      cxt.eval('a[1]').should == 20
+      cxt.eval('a[0] = 100; a[0]').should == 100
+      array[0].should == 100
+    end
+
+    it 'should access plain hashes' do
+      cxt   = H8::Context.new
+      h = {'one' => 2 }
+      cxt[:h] = h
+      cxt.eval("h['one']").should == 2
+      eval("h['one']=1;")
+      h['one'].should == 1
+    end
+
+    it 'should allow adding poroperties to ruby objects'
+
 
     it 'should gate classes'
   end
