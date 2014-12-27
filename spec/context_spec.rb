@@ -68,7 +68,7 @@ describe 'context' do
     # end
     t = Time.now
     expect( -> {
-      c2 = cxt.eval script, timeout: 0.2
+      c2 = cxt.eval script, max_time: 0.2
     }).to raise_error(H8::TimeoutError)
     (Time.now - t).should < 0.25
     cxt.eval('(last-start)/1000').should < 250

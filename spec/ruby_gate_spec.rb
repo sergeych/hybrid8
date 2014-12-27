@@ -250,8 +250,40 @@ describe 'ruby gate' do
       h['one'].should == 1
     end
 
-    it 'should gate classes'
-  end
+    it 'should pass varargs' do
+      cxt = H8::Context.new
+      cxt[:test] = -> (args) {
+        # Sample how to deal with javascript 'arguments' vararg object:
+        args.to_ruby.values.join(',')
+      }
+      res = cxt.eval <<-End
+        function test2() {
+          return test(arguments);
+        }
+        test2(1,2,'ho');
+      End
+      res.should == '1,2,ho'
+    end
 
-  it 'should retain ruby objects'
+    it 'should gate classes' do
+      class Gated
+        attr :init_args
+
+        def initialize *args
+          p args
+          @init_args = args
+        end
+      end
+
+      cxt = H8::Context.new RClass: Gated
+      c = cxt.eval 'new RClass()'
+      c.should be_a(Gated)
+      c.init_args.should == []
+
+      c = cxt.eval 'rc = new RClass("hello", "world")'
+      c.should be_a(Gated)
+      c.init_args.should == ['hello', 'world']
+      cxt.eval('rc.init_args').should == ['hello', 'world']
+    end
+  end
 end

@@ -163,6 +163,7 @@ public:
 		case T_HASH:
 		case T_DATA:
 		case T_OBJECT:
+		case T_CLASS:
 			return gateObject(ruby_value);
 		default:
 			VALUE msg = rb_str_new2("can't gate to js (unknown): ");

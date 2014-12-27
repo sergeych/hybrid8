@@ -7,14 +7,18 @@ require "rake/extensiontask"
 require 'rubygems/package_task'
 
 spec = Gem::Specification.new do |spec|
-  spec.name          = "h8"
-  spec.version       = H8::VERSION
-  spec.authors       = ["sergeych"]
-  spec.email         = ["real.sergeych@gmail.com"]
-  spec.summary       = %q{Minimalistic and sane v8 bindings}
-  spec.description   = %q{Should be more or less replacement for broken therubyracer gem and ruby 2.1+ }
-  spec.homepage      = ""
-  spec.license       = "MIT"
+  spec.name        = "h8"
+  spec.version     = H8::VERSION
+  spec.authors     = ["sergeych"]
+  spec.email       = ["real.sergeych@gmail.com"]
+  spec.summary     = %q{Minimalistic and fast Ruby <--> V8 integration}
+  spec.description = <<-End
+    Synergy of ruby and javascript code, almost completely integrates both languages, their
+    garbage collection models, object models and so on. Effective for tight ruby-javascript
+    integration where objects can be passed between different languages several times.
+  End
+  spec.homepage    = "https://github.com/sergeych/hybrid8"
+  spec.license     = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
@@ -37,9 +41,9 @@ Gem::PackageTask.new(spec) do |pkg|
 end
 
 Rake::ExtensionTask.new "h8", spec do |ext|
-  ext.lib_dir  = "lib/h8"
+  ext.lib_dir        = "lib/h8"
   ext.source_pattern = "*.{c,cpp}"
-  ext.gem_spec = spec
+  ext.gem_spec       = spec
 end
 
 spec

@@ -10,6 +10,10 @@ module H8
   # pass values between context, as they often map native Javascript objects. If you need, you
   # can copy, for example, by converting it H8::Value#to_ruby first. Another approach is to
   # use JSON serialization from the script.
+  #
+  # Interesting thing about H8::Value is that when passed back to some javascript environment
+  # (say, callback parameted or as a global variable), it unwraps source javascript object -
+  # no copying, no modifying.
   class Value
 
     include Comparable
@@ -26,17 +30,16 @@ module H8
       name_index.is_a?(Fixnum) ? _get_index(name_index) : _get_attr(name_index.to_s)
     end
 
-    # Set js object attribute by either name or index (should be Fixnum instance). It always
-    # return H8::Value instance, check it to (not) be undefined? to see if there is such attribute
-    #
-    # @return [H8::Value] instance, which is .undefined? if does not exist
+    # Set js object attribute by either name or index (should be Fixnum instance).
     def []= name_index, value
       # name_index.is_a?(Fixnum) ? _get_index(name_index) : _get_attr(name_index.to_s)
       _set_attr(name_index.to_s, value)
     end
 
-    # Optimized JS member access. Support class members and member functions - will call them
-    # automatically. Use val['attr'] to get callable instead
+    # Optimizing JS member access. Support class members and member functions - will call them
+    # automatically. Use val['attr'] to get callable instead.
+    #
+    # First invocation creates accessor method so future calls happen much faster
     def method_missing(method_sym, *arguments, &block)
       name = method_sym.to_s
       if name[-1] != '='
@@ -56,7 +59,8 @@ module H8
       send method_sym, *arguments
     end
 
-    # Compare to other object, either usual or another Value instance. Does its best.
+    # Compare to other object, either usual or another Value instance. Tries its best.
+    # be sure to use it wisely and report any problems
     def <=> other
       other = other.to_ruby if other.is_a?(H8::Value)
       to_ruby <=> other
@@ -132,6 +136,8 @@ module H8
           to_f
         when array?
           _get_attr('length').to_i.times.map { |i| _get_index(i).to_ruby }
+        when function?
+          to_proc
         when object?
           to_h
         else

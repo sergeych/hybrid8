@@ -177,7 +177,7 @@ void Init_h8(void) {
 	ruby_gate_class = rb_define_class_under(h8, "RubyGate", rb_cObject);
 	rb_define_alloc_func(context_class, context_alloc);
 	rb_define_method(context_class, "_eval", (ruby_method) context_eval, 2);
-	rb_define_method(context_class, "set_var", (ruby_method) context_set_var,
+	rb_define_method(context_class, "_set_var", (ruby_method) context_set_var,
 			2);
 
 	value_class = rb_define_class_under(h8, "Value", rb_cObject);
