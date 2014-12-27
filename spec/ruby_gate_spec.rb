@@ -270,7 +270,6 @@ describe 'ruby gate' do
         attr :init_args
 
         def initialize *args
-          p args
           @init_args = args
         end
       end
