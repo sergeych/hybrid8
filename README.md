@@ -1,7 +1,7 @@
 # Hybrid8, aka H8
 
-_Warning_ this gem is a beta at the moment. I will be pleased if you try it and help me debug it,
-but it is not yet production stable.
+_Warning_ this gem is a public beta at the moment - beta testers are welcome!It means, it is not
+yet production stable - we haven't yet tried.
 
 This gem was intended to replace therubyracer for many reasons:
 
@@ -53,7 +53,32 @@ decided to not to slow down everything. If it is a problem, lets discuss it.
 
 - correct and accurate object tracking in both JS and Ruby VMs, GC aware.
 
-- Not Yet: source information in uncaught exception in js
+- labmda/proc passed as var to the context **does not receives first (this) argument
+automatically!**
+
+E.g. rubyracer code
+
+    cxt[:fn] = -> (this, a, b) { a + b }
+
+Becomes
+
+    cxt[:fn] = -> (a, b) { a + b }
+
+it looks prettier, doesn't it? And, if you really need `this` in the callable, just mention it in
+the call:
+
+    cxt[:fn] = -> (this, a, b) { a + b + this.offset }
+    cxt.eval 'fn(this, 10, 20)'
+
+This, again, is done for execution speed. Always wrapping `this` to pass it to ruby is a costly
+procedure which is always performed in rubyracer - no matter is it really needed. In H8 you can
+spend your resources only when it worth extra processing. From my experience, it is a rare situation
+when such a lambda needs javascript's this - but, no problem, pass it this, or whatever else
+you need ;)
+
+- there is no 'Context object initialization' - it does not work well in rubyracer so it is not
+likely used widely. We can add it later, though.
+
 
 
 ## Installation

@@ -84,7 +84,7 @@ module H8
       H8::Undefined
     end
 
-    private
+    protected
 
     # Set var that could be either a callable, class instance, simple value or a Class class
     # in which case constructor function will be created
@@ -107,6 +107,5 @@ module H8
     def _do_cretate_ruby_class(klass, arguments)
       klass.new *arguments.to_ruby.values
     end
-
   end
 end

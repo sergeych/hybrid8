@@ -16,6 +16,25 @@ describe 'ruby gate' do
     GC.start
   end
 
+  # it 'should gate callables in therubyrace mode' do
+  #   cxt      = H8::CompatibleContext.new
+  #   cxt[:fn] = -> (this, a, b) {
+  #     p this.to_s
+  #     this.offset + a + b
+  #   }
+  #
+  #   res = cxt.eval <<-End
+  #     function Test() {
+  #       this.offset = 110;
+  #       this.method = function(a,b) {
+  #         return fn(a,b);
+  #       }
+  #     }
+  #     new Test().method(11, 22);
+  #   End
+  #   res.to_i.should == 143
+  # end
+
   it 'should allow edit context on yield' do
     cxt      = H8::Context.new
     cxt[:fn] = -> (a, b) {
