@@ -45,7 +45,7 @@ public:
 		reason = str_reason;
 	}
 
-	JsError(H8* h8, v8::Local<v8::Message> message, v8::Local<v8::Value> exception);
+	JsError(H8* h8, Local<Message> message, Local<Value> exception);
 
 	/**
 	 * Call it with a proper exception class and be careful - after this call no code will be executed!
@@ -55,6 +55,8 @@ public:
 	Local<Message> message() const;
 
 	Local<Value> exception() const;
+
+	Local<Value> stacktrace() const;
 
 	virtual ~JsError() noexcept {
 		_message.Reset();
@@ -68,9 +70,11 @@ protected:
 	v8::Persistent<v8::Value, v8::CopyablePersistentTraits<v8::Value>> _exception;
 };
 
-class JsTimeoutError : public JsError {
+class JsTimeoutError: public JsError {
 public:
-	JsTimeoutError(H8* h8) : JsError(h8, NULL) {}
+	JsTimeoutError(H8* h8) :
+			JsError(h8, NULL) {
+	}
 	virtual void raise();
 };
 
@@ -97,6 +101,7 @@ public:
 		isolate = Isolate::New();
 		Isolate::Scope isolate_scope(isolate);
 		HandleScope handle_scope(isolate);
+		isolate->SetCaptureStackTraceForUncaughtExceptions(true);
 
 		v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(
 				isolate);
@@ -113,11 +118,11 @@ public:
 	 * 				 to this value, JsTimeoutError will be thrown if exceeded
 	 * \return the value returned by the script.
 	 */
-	Handle<Value> eval(const char* script_utf,unsigned max_ms=0);
+	Handle<Value> eval(const char* script_utf, unsigned max_ms = 0);
 
-	VALUE eval_to_ruby(const char* script_utf,int timeout=0) {
+	VALUE eval_to_ruby(const char* script_utf, int timeout = 0) {
 		// TODO: throw ruby exception on error
-		return to_ruby(eval(script_utf,timeout));
+		return to_ruby(eval(script_utf, timeout));
 	}
 
 	Handle<Context> getContext() {
@@ -210,10 +215,13 @@ inline VALUE h8::H8::to_ruby(Handle<Value> value) {
 	return JsGate::to_ruby(this, value);
 }
 
-inline h8::JsError::JsError(H8* h8, v8::Local<v8::Message> message,
-		v8::Local<v8::Value> exception) :
-		h8(h8), _message(h8->getIsolate(), message), _exception(h8->getIsolate(),
-				exception), has_js_exception(true), reason(NULL) {
+inline h8::JsError::JsError(H8* h8, Local<Message> message,
+		Local<Value> exception) :
+		h8(h8),
+		_message(h8->getIsolate(), message),
+		_exception(h8->getIsolate(), exception),
+		has_js_exception(true),
+		reason(NULL) {
 }
 
 inline Local<Message> h8::JsError::message() const {
@@ -223,7 +231,5 @@ inline Local<Message> h8::JsError::message() const {
 inline Local<Value> h8::JsError::exception() const {
 	return Local<Value>::New(h8->getIsolate(), _exception);
 }
-
-
 
 #endif

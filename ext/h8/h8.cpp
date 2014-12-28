@@ -21,13 +21,13 @@ void h8::JsError::raise() {
 				// Passing thru the Ruby exception
 				ruby_exception = rg->rubyObject();
 			} else {
-				Local<String> s = message()->Get();
+				Local<Message> m = message();
+				Local<String> s = m->Get();
 				String::Utf8Value res(s->ToString());
 				ruby_exception = ruby_exception = rb_exc_new2(js_exception,
-						*res ? *res : "test");
+						*res ? *res : "unknown javascript exception");
 				rb_iv_set(ruby_exception, "@message", h8->to_ruby(s));
-				// TODO: Pass also all information from Message instance
-				rb_iv_set(ruby_exception, "@source", h8->to_ruby(source));
+				rb_iv_set(ruby_exception, "@javascript_error", h8->to_ruby(jsx));
 			}
 		}
 		rb_exc_raise(ruby_exception);

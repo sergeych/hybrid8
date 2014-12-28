@@ -19,7 +19,7 @@ module H8
     include Comparable
 
     def inspect
-      "<H8::Value #{to_ruby}>"
+      "<H8::Value #{to_ruby rescue '(too deep)'}>"
     end
 
     # Get js object attribute by either name or index (should be Fixnum instance). It always
@@ -105,8 +105,8 @@ module H8
     end
 
     # Try to convert javascript object to a ruby hash
-    def to_h
-      each.reduce({}) { |all, kv| all[kv[0]] = kv[1].to_ruby; all }
+    def to_h depth=0
+      each.reduce({}) { |all, kv| all[kv[0]] = kv[1].to_ruby depth; all }
     end
 
     # Iterate over javascript object keys
@@ -125,8 +125,12 @@ module H8
     end
 
     # Tries to convert wrapped JS object to ruby primitive (Fixed, String, Float, Array, Hash).
-    # Note that this conversion looses information about source javascript class (if any)
-    def to_ruby
+    # Note that this conversion looses information about source javascript class (if any).
+    #
+    # @raise H8::Error if the data structure is too deep (e.g. cyclic)
+    def to_ruby depth=0
+      depth += 1
+      raise H8::Error, "object tree too deep" if depth > 100
       case
         when integer?
           to_i
@@ -135,11 +139,11 @@ module H8
         when float?
           to_f
         when array?
-          _get_attr('length').to_i.times.map { |i| _get_index(i).to_ruby }
+          _get_attr('length').to_i.times.map { |i| _get_index(i).to_ruby depth }
         when function?
           to_proc
         when object?
-          to_h
+          to_h depth
         else
           raise Error, "Dont know how to convert #{self.class}"
       end
@@ -179,7 +183,7 @@ end
 class Object
   # It is already a ruby object. Gate objects should override
   # as need
-  def to_ruby
+  def to_ruby depth=0
     self
   end
 end

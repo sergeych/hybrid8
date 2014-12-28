@@ -106,7 +106,29 @@ describe 'ruby gate' do
           }
   end
 
-  it 'should have information about javascript exceptions'
+  it 'should have information about javascript exceptions' do
+    # javascript_backtrace - list of strings?
+    begin
+      H8::Context.eval <<-End
+        // This is ok
+        var ok = true;
+        function bad() {
+          throw Error("test");
+        }
+        function good() {
+          bad();
+        }
+        // This is also ok
+        good();
+      End
+      fail 'did not raise error'
+    rescue H8::JsError => e
+      x  = e.javascript_error
+      e.name.should == 'Error'
+      e.message.should =~ /test/
+      e.javascript_backtrace.should =~ /at bad \(eval\:4\:17\)/
+    end
+  end
 
   context 'accessing ruby code' do
     class Base
@@ -295,5 +317,13 @@ describe 'ruby gate' do
       c.init_args.should == ['hello', 'world']
       cxt.eval('rc.init_args').should == ['hello', 'world']
     end
+  end
+
+  it 'should survive recursive constructions' do
+    a = H8::Context.eval 'a=[1,2]; a.push(a); a'
+    expect(-> { a.to_ruby }).to raise_error(H8::Error)
+    a = H8::Context.eval "a={on:2}; a['a']=a; a"
+    expect(-> { a.to_ruby }).to raise_error(H8::Error)
+    a.inspect.should =~ /too deep/
   end
 end
