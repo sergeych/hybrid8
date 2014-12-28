@@ -36,7 +36,7 @@ module H8
     # Create compiler instance.
     def initialize
       @context = H8::Context.new
-      @context.eval open('lib/h8/coffee-script.js', 'r').read
+      @context.eval open(File.join(File.dirname(File.expand_path(__FILE__)),'/coffee-script.js'), 'r').read
     end
 
     # compile coffeescript source and return compiled javascript
