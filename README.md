@@ -34,6 +34,8 @@ call #to_ruby)
 - Uncaught ruby exceptions are thrown as javascript exceptions in javascript code. The same,
 uncaught javascript exceptions raise ruby error in ruby code.
 
+- Integrated CoffeeScript support
+
 ## Main difference from therubyracer/features not ready
 
 - This version is not (yet?) thread safe*. For the sake of effectiveness, do not access same

@@ -1,3 +1,5 @@
+require 'thread'
+
 module H8
   class Context
     # Create new context optionally providing variables hash
