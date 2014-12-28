@@ -105,7 +105,24 @@ module H8
     # create class instance passing it arguments stored in javascript 'arguments' object
     # (so it repacks them first)
     def _do_cretate_ruby_class(klass, arguments)
-      klass.new *arguments.to_ruby.values
+      klass.new *H8::arguments_to_a(arguments.to_ruby.values)
     end
   end
+
+  # class RacerContext < Context
+  #   protected
+  #   def set_var name, value
+  #     if value.is_a?(Proc)
+  #       n1 = "___compat_#{name}"
+  #       _eval "function #{name}() { return #{n1}( this, arguments); }", 0
+  #       super n1, -> (this, arguments) {
+  #         args = [this] + H8::arguments_to_a(arguments)
+  #         value.call *args
+  #       }
+  #     else
+  #       super name, value
+  #     end
+  #   end
+  # end
+
 end

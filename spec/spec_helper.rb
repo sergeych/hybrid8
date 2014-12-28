@@ -45,3 +45,10 @@ def false.false?
   true
 end
 
+def measure text, reps=10000
+  t = Time.now
+  reps.times { yield }
+  puts "#{Time.now-t} spent to #{text}"
+end
+
+

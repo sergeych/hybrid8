@@ -17,9 +17,10 @@ describe 'ruby gate' do
   end
 
   # it 'should gate callables in therubyrace mode' do
-  #   cxt      = H8::CompatibleContext.new
+  #   cxt      = H8::Context.new
   #   cxt[:fn] = -> (this, a, b) {
   #     p this.to_s
+  #     p this.offset
   #     this.offset + a + b
   #   }
   #
@@ -27,7 +28,7 @@ describe 'ruby gate' do
   #     function Test() {
   #       this.offset = 110;
   #       this.method = function(a,b) {
-  #         return fn(a,b);
+  #         return fn(this,a,b);
   #       }
   #     }
   #     new Test().method(11, 22);
@@ -306,7 +307,7 @@ describe 'ruby gate' do
       cxt = H8::Context.new
       cxt[:test] = -> (args) {
         # Sample how to deal with javascript 'arguments' vararg object:
-        args.to_ruby.values.join(',')
+        H8::arguments_to_a(args).join(',')
       }
       res = cxt.eval <<-End
         function test2() {
