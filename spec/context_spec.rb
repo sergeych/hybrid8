@@ -74,4 +74,30 @@ describe 'context' do
     cxt.eval('(last-start)/1000').should < 250
   end
 
+  it 'should work in many threads' do
+    sum = 0
+    valid = 0
+    n   = 10
+    contexts = []
+    tt  = n.times.map { |n|
+      valid += (n+1)*100 + 10
+      Thread.start {
+        cxt         = H8::Context.new
+        contexts << cxt
+        cxt[:array] = 100024.times.map { |x| x*(n+1) }
+        cxt[:n] = n+1
+        sum         += cxt.eval('result = array[100] + 10')
+      }
+    }
+    tt.each &:join
+    sum.should == valid
+    GC.start
+    # Cross-thread access
+    contexts.each { |cxt|
+      s, n = cxt.eval('data = [result,n]')
+      s.should == 100*n + 10
+    }
+  end
+
+
 end
