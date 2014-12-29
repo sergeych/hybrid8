@@ -162,12 +162,12 @@ public:
 	 * Call this as function over global context
 	 */
 	VALUE call(VALUE args) const {
-		v8::HandleScope scope(h8->getIsolate());
+		H8::Scope scope(h8);
 		return apply(h8->getContext()->Global(), args);
 	}
 
 	VALUE apply(VALUE self, VALUE args) const {
-		v8::HandleScope scope(h8->getIsolate());
+		H8::Scope scope(h8);
 		return apply(h8->gateObject(self), args);
 	}
 

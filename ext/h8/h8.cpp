@@ -27,7 +27,8 @@ void h8::JsError::raise() {
 				ruby_exception = ruby_exception = rb_exc_new2(js_exception,
 						*res ? *res : "unknown javascript exception");
 				rb_iv_set(ruby_exception, "@message", h8->to_ruby(s));
-				rb_iv_set(ruby_exception, "@javascript_error", h8->to_ruby(jsx));
+				rb_iv_set(ruby_exception, "@javascript_error",
+						h8->to_ruby(jsx));
 			}
 		}
 		rb_exc_raise(ruby_exception);
@@ -60,7 +61,7 @@ void h8::H8::ruby_mark_gc() const {
 		((AllocatedResource*) x)->rb_mark_gc();
 }
 
-v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,unsigned max_ms) {
+v8::Handle<v8::Value> h8::H8::eval(const char* script_utf, unsigned max_ms) {
 	v8::EscapableHandleScope escape(isolate);
 	Local<Value> result;
 
@@ -76,20 +77,20 @@ v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,unsigned max_ms) {
 		result = Undefined(isolate);
 	} else {
 		result = Undefined(isolate);
-		if( max_ms > 0 ) {
+		if (max_ms > 0) {
 			std::mutex m;
 			std::condition_variable cv;
-			std::thread thr( [&] {
-				std::unique_lock<std::mutex> lock(m);
-				if( std::cv_status::timeout == cv.wait_for(lock, std::chrono::milliseconds(max_ms) ) ) {
-					isolate->TerminateExecution();
-				}
-			});
+			std::thread thr(
+					[&] {
+						std::unique_lock<std::mutex> lock(m);
+						if( std::cv_status::timeout == cv.wait_for(lock, std::chrono::milliseconds(max_ms) ) ) {
+							isolate->TerminateExecution();
+						}
+					});
 			script->Run();
 			cv.notify_all();
 			thr.join();
-		}
-		else {
+		} else {
 			result = script->Run();
 		}
 		try_catch.throwIfCaught();
@@ -98,9 +99,12 @@ v8::Handle<v8::Value> h8::H8::eval(const char* script_utf,unsigned max_ms) {
 }
 
 h8::H8::~H8() {
-	while (!resources.is_empty()) {
-		// this should also remove it from the list:
-		resources.peek_first<AllocatedResource>()->free();
+	{
+		Scope s(this);
+		while (!resources.is_empty()) {
+			// this should also remove it from the list:
+			resources.peek_first<AllocatedResource>()->free();
+		}
 	}
 
 	persistent_context.Reset();

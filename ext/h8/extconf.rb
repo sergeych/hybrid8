@@ -37,7 +37,7 @@ begin
       v8_path = ENV['V8_3_31_ROOT'] or raise "Please give me export V8_3_31_ROOT=..."
       # dir_config('v8', '/Users/sergeych/dev/v8', '/Users/sergeych/dev/v8/out/native')
       dir_config('v8', v8_path, v8_path+'/out/native')
-      CONFIG['CXXFLAGS'] += ' --std=c++11'
+      CONFIG['CXXFLAGS'] += ' --std=c++11 -O6'
     else
       # example linux package https://github.com/porzione/v8-git-debian
       dir_config('v8', '/usr/include/libv8-3.31', '/usr/lib/libv8-3.31')

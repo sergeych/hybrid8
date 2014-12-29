@@ -81,16 +81,22 @@ public:
 class H8 {
 public:
 
-	class Scope: public HandleScope {
-		v8::Isolate::Scope isolate_scope;
-		v8::Context::Scope context_scope;
+	class Scope {
+		Locker locker;
+		Isolate::Scope isolate_scope;
+		HandleScope handle_scope;
+		Context::Scope context_scope;
+
 		H8* rcontext;
 
 	public:
 		Scope(H8* cxt) :
-				HandleScope(cxt->getIsolate()), isolate_scope(
-						cxt->getIsolate()), context_scope(cxt->getContext()), rcontext(
-						cxt) {
+				locker(cxt->getIsolate()),
+				handle_scope(cxt->getIsolate()),
+				isolate_scope(cxt->getIsolate()),
+				context_scope(cxt->getContext()),
+				rcontext(cxt)
+		{
 		}
 	};
 
@@ -99,6 +105,7 @@ public:
 	H8() :
 			self(Qnil) {
 		isolate = Isolate::New();
+		Locker l(isolate);
 		Isolate::Scope isolate_scope(isolate);
 		HandleScope handle_scope(isolate);
 		isolate->SetCaptureStackTraceForUncaughtExceptions(true);
@@ -217,11 +224,9 @@ inline VALUE h8::H8::to_ruby(Handle<Value> value) {
 
 inline h8::JsError::JsError(H8* h8, Local<Message> message,
 		Local<Value> exception) :
-		h8(h8),
-		_message(h8->getIsolate(), message),
-		_exception(h8->getIsolate(), exception),
-		has_js_exception(true),
-		reason(NULL) {
+		h8(h8), _message(h8->getIsolate(), message), _exception(
+				h8->getIsolate(), exception), has_js_exception(true), reason(
+				NULL) {
 }
 
 inline Local<Message> h8::JsError::message() const {
