@@ -38,15 +38,12 @@ uncaught javascript exceptions raise ruby error in ruby code.
 
 ## Main difference from therubyracer/features not ready
 
-- This version is not (yet?) thread safe*. For the sake of effectiveness, do not access same
-H8::Context and its returned values from concurrent threads. Use Mutexes if need.
-
 The pity thing is, if we will Lock() the context on each call to it, the performance degradation
 will be notable and no matter whether you need threading with it. So, if you really need it, you
 wrap it with Mutex or whatever you want, without slowing down all the rest of us.
 
-- Script is executed in the calling ruby thread without unblocking it (other ruby threads can not
- perform on this core while javascript code runs).
+- H8 is thread safe (users Lockers) but script is executed in the calling ruby thread without
+releasing gvl (other ruby threads can not perform on this core while javascript code runs).
 
 The same performance reason. If we release gvl on script start and reacquire it every time the ruby
 object, callback, class, whatever is referenced from JS, the execution will considerably degrade. As
