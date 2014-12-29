@@ -184,6 +184,11 @@ public:
 	virtual void free() {
 		persistent_value.Reset();
 		AllocatedResource::free();
+		h8 = 0;
+	}
+
+	virtual void rb_mark_gc() {
+		rb_gc_mark(h8->ruby_context());
 	}
 
 	virtual Local<Value> value() const {
@@ -195,7 +200,13 @@ public:
 	}
 
 	virtual ~JsGate() {
-		persistent_value.Reset();
+		if( h8 ) {
+			Locker l(h8->getIsolate());
+			persistent_value.Reset();
+		}
+		else {
+			persistent_value.Reset();
+		}
 	}
 
 private:

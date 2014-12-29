@@ -105,8 +105,7 @@ h8::H8::~H8() {
 			// this should also remove it from the list:
 			resources.peek_first<AllocatedResource>()->free();
 		}
+		persistent_context.Reset();
 	}
-
-	persistent_context.Reset();
 	isolate->Dispose();
 }

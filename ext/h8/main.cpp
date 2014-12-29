@@ -34,7 +34,7 @@ static void rvalue_free(void* ptr) {
 
 static void rvalue_mark(void* ptr) {
 	JsGate *gate = (JsGate*) ptr;
-	rb_gc_mark(gate->ruby_context());
+	gate->rb_mark_gc();
 }
 
 VALUE rvalue_alloc(VALUE klass) {
