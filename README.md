@@ -39,8 +39,9 @@ uncaught javascript exceptions raise ruby error in ruby code.
 ## Main difference from therubyracer/features not ready
 
 - H8 is thread safe (uses Lockers) but script is executed in the calling ruby thread without
-releasing gvl (other ruby threads can not perform on this core while javascript code runs). We are
-working on it, as simply releasing GVL and reacquring it may degrade performance.
+releasing gvl so other ruby threads can not perform in parallel with js/coffee thread. We are
+working on it, as simply releasing GVL and reacquring it on any call to ruby VM may severely
+degrade performance.
 
 - labmda/proc passed as var to the context **does not receives first (this) argument
 automatically!**
@@ -98,11 +99,7 @@ Install first a valid v8 version. We provide a ready package!
 
     sudo apt-get install libv8-3.31-dev
 
-It should install prerequisites, if not, manually install
-
-    sudo apt-get install libicu-dev
-
-You might also need to install GMP.
+Usually it is all you need. Rarely, You might also need to install GMP.
 
 ### Setting up
 
