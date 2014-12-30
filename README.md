@@ -38,19 +38,9 @@ uncaught javascript exceptions raise ruby error in ruby code.
 
 ## Main difference from therubyracer/features not ready
 
-The pity thing is, if we will Lock() the context on each call to it, the performance degradation
-will be notable and no matter whether you need threading with it. So, if you really need it, you
-wrap it with Mutex or whatever you want, without slowing down all the rest of us.
-
-- H8 is thread safe (users Lockers) but script is executed in the calling ruby thread without
-releasing gvl (other ruby threads can not perform on this core while javascript code runs).
-
-The same performance reason. If we release gvl on script start and reacquire it every time the ruby
-object, callback, class, whatever is referenced from JS, the execution will considerably degrade. As
-this gem is intended to let javascript/coffescript tightly integrate with ruby objects we have
-decided to not to slow down everything. If it is a problem, lets discuss it.
-
-- correct and accurate object tracking in both JS and Ruby VMs, GC aware.
+- H8 is thread safe (uses Lockers) but script is executed in the calling ruby thread without
+releasing gvl (other ruby threads can not perform on this core while javascript code runs). We are
+working on it, as simply releasing GVL and reacquring it may degrade performance.
 
 - labmda/proc passed as var to the context **does not receives first (this) argument
 automatically!**
@@ -76,7 +66,7 @@ when such a lambda needs javascript's this - but, no problem, pass it this, or w
 you need ;)
 
 - there is no 'Context object initialization' - it does not work well in rubyracer so it is not
-likely used widely. We can add it later, though.
+likely used widely. We can add it later, though - if you need it, add an issue.
 
 
 
