@@ -6,7 +6,7 @@
 #include <iostream>
 #include <exception>
 #include "allocated_resource.h"
-#include "JsCatcher.h"
+#include "js_catcher.h"
 
 using namespace v8;
 using namespace std;

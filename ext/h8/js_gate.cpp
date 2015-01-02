@@ -1,5 +1,5 @@
 #include "h8.h"
-#include "JsCatcher.h"
+#include "js_catcher.h"
 #include <ruby/thread.h>
 
 using namespace h8;

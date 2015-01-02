@@ -102,22 +102,21 @@ describe 'context' do
     n        = 10
     tt = []
     n.times { |n|
-      cxt = nil
       t = Thread.start {
         cxt = H8::Context.new
+        tt << OpenStruct.new({ thread: t, number: n, context: cxt })
         cxt[:array] = 100024.times.map { |x| x*(n+1) }
         cxt[:n]     = n+1
         mutex.synchronize {
           valid += (n+1)*100 + 10
           sum         += cxt.eval('result = array[100] + 10')
         }
-        tt << OpenStruct.new({ thread: t, number: n, context: cxt })
       }
     }
     tt.each{ |x| x.thread.join }
-    mutex.synchronize {
+    # mutex.synchronize {
       sum.should == valid
-    }
+    # }
     GC.start
     # Cross-thread access
     tt.each { |x|

@@ -5,7 +5,7 @@
  *      Author: sergeych
  */
 
-#include "JsCatcher.h"
+#include "js_catcher.h"
 
 namespace h8 {
 
