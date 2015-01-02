@@ -5,7 +5,9 @@ describe 'ruby gate' do
 
   it 'should gate callables' do
     cxt      = H8::Context.new
+    count = 0
     cxt[:fn] = -> (a, b) {
+      count += 1
       a + b
     }
 
@@ -14,6 +16,7 @@ describe 'ruby gate' do
     cxt = nil
     res = nil
     GC.start
+    count.should == 1
   end
 
   # it 'should gate callables in therubyrace mode' do
@@ -47,7 +50,7 @@ describe 'ruby gate' do
     res.to_i.should == -11
   end
 
-  it 'should gate callables with varargs' do
+  it 'va: should gate callables with varargs' do
     cxt      = H8::Context.new
     cxt[:fn] = -> (*args) {
       args.reduce(0) { |all, x| all+x }

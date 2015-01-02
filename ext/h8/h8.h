@@ -197,10 +197,21 @@ public:
 
 	void ruby_mark_gc() const;
 
+	bool isGvlReleased() const noexcept { return gvl_released; }
+
+	void setGvlReleased(bool state) noexcept { gvl_released = state; }
+
+	void setInterrupted() {
+		rb_interrupted = true;
+	}
+
+	bool isInterrupted() const { return rb_interrupted; }
+
 	virtual ~H8();
 
 private:
 	friend VALUE h8::context_alloc(VALUE klass);
+	void invoke(v8::Handle<v8::Script> script, Local<Value>& result);
 
 	Isolate *isolate;
 	VALUE self;
@@ -208,6 +219,8 @@ private:
 	Persistent<Context> persistent_context;
 
 	bool is_error = false;
+	bool gvl_released = false;
+	bool rb_interrupted = false;
 
 	chain resources;
 };

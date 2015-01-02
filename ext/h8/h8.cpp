@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "h8.h"
+#include <ruby/thread.h>
 #include "ruby_gate.h"
 
 void h8::JsError::raise() {
@@ -61,6 +62,48 @@ void h8::H8::ruby_mark_gc() const {
 		((AllocatedResource*) x)->rb_mark_gc();
 }
 
+struct CallerParams {
+	h8::H8* h8;
+	Handle<Script>& script;
+	Local<Value>& result;
+};
+
+static void* script_caller(void* param) {
+	CallerParams *cp = (CallerParams*) param;
+	puts("Scaller");
+	cp->result = cp->script->Run();
+	puts("Script appears to be done");
+	return NULL;
+}
+
+static void unblock_script(void* param) {
+	h8::H8* h8 = (h8::H8*) param;
+	if( rb_thread_interrupted(rb_thread_current()) ) {
+		printf("UNBLOCK!!!! CALLED!!! Why? %p\n", param);
+		h8->setInterrupted();
+		h8->getIsolate()->TerminateExecution();
+	}
+	else {
+		puts("UBF not interrupted. why?");
+	}
+}
+
+void h8::H8::invoke(v8::Handle<v8::Script> script, Local<Value>& result) {
+#if 1
+	puts("WILLRRRR");
+	CallerParams cp = { this, script, result };
+	rb_interrupted = false;
+	gvl_released = true;
+	puts("> in");
+	rb_thread_call_without_gvl(script_caller, &cp, unblock_script, this);
+	puts("< out");
+	gvl_released = false;
+#else
+	gvl_released = false;
+	result = script->Run();
+#endif
+}
+
 v8::Handle<v8::Value> h8::H8::eval(const char* script_utf, unsigned max_ms) {
 	v8::EscapableHandleScope escape(isolate);
 	Local<Value> result;
@@ -87,11 +130,11 @@ v8::Handle<v8::Value> h8::H8::eval(const char* script_utf, unsigned max_ms) {
 							isolate->TerminateExecution();
 						}
 					});
-			script->Run();
+			invoke(script, result);
 			cv.notify_all();
 			thr.join();
 		} else {
-			result = script->Run();
+			invoke(script, result);
 		}
 		try_catch.throwIfCaught();
 	}

@@ -54,6 +54,10 @@ public:
 	virtual ~RubyGate() {
 	}
 
+	Isolate* isolate() const noexcept { return context->getIsolate(); }
+
+	H8* getH8() { return context; }
+
 protected:
 	/**
 	 * Perform rb_rescue call to 'call' callback, and invoke block with value returned by callback
