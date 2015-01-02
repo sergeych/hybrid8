@@ -13,16 +13,14 @@ static void* unblock_caller(void *param) {
 	return NULL;
 }
 
-static void with_gvl(RubyGate *gate,
-		const std::function<void(void)> &block) {
+static void with_gvl(RubyGate *gate, const std::function<void(void)> &block) {
 //	v8::Unlocker unlock(gate->isolate());
 	H8 *h8 = gate->getH8();
 	if (h8->isGvlReleased()) {
 		h8->setGvlReleased(false);
 		rb_thread_call_with_gvl(unblock_caller, (void*) &block);
 		h8->setGvlReleased(true);
-	}
-	else
+	} else
 		block();
 }
 
@@ -107,10 +105,14 @@ void h8::RubyGate::throw_js() {
 
 void h8::RubyGate::rescued_call(VALUE rb_args, VALUE (*call)(VALUE),
 		const std::function<void(VALUE)> &block) {
-	last_ruby_error = Qnil;
-	VALUE me = Data_Wrap_Struct(ruby_gate_class, 0, 0, this);
-	VALUE res = rb_rescue((ruby_method) (call), rb_args,
-			(ruby_method) (rescue_callback), me);
+	VALUE res;
+	{
+		Unlocker u(context->getIsolate());
+		last_ruby_error = Qnil;
+		VALUE me = Data_Wrap_Struct(ruby_gate_class, 0, 0, this);
+		res = rb_rescue((ruby_method) (call), rb_args,
+				(ruby_method) (rescue_callback), me);
+	}
 	if (last_ruby_error == Qnil)
 		block(res);
 	else

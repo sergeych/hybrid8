@@ -96,11 +96,11 @@ describe 'context' do
 
   it 'should work in many threads' do
     # pending
-    sum      = 0
+    sum   = 0
     mutex = Mutex.new
-    valid    = 0
-    n        = 10
-    tt = []
+    valid = 0
+    n     = 10
+    tt    = []
     n.times { |n|
       t = Thread.start {
         cxt = H8::Context.new
@@ -109,13 +109,13 @@ describe 'context' do
         cxt[:n]     = n+1
         mutex.synchronize {
           valid += (n+1)*100 + 10
-          sum         += cxt.eval('result = array[100] + 10')
+          sum   += cxt.eval('result = array[100] + 10')
         }
       }
     }
-    tt.each{ |x| x.thread.join }
+    tt.each { |x| x.thread.join }
     # mutex.synchronize {
-      sum.should == valid
+    sum.should == valid
     # }
     GC.start
     # Cross-thread access

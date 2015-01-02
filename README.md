@@ -37,10 +37,14 @@ uncaught javascript exceptions raise ruby error in ruby code.
 
 - Integrated CoffeeScript support
 
-- H8 is thread safe (using Lockers) and releases gvl when executing js code (and reqcquires it as
-need), thus other ruby threads can work in parallel with javascript executing threads. Still,
-h8 does not releases Locker when calling ruby code from javascript - for performance considerations.
+- H8 is thread safe. It releases gvl lock while executing ruby code and unlocks v8 isolate when
+calling ruby code thus allow maximum possibile parallel execution of ruby and javascript code
+in separate threads.
 
+Due to v8 and ruby MRI limitations, only one ruby thread can access any given H8::Context (e.g.
+execute javascript code in it), and, as usual, all ruby threads are locked by a single mitex (gvl).
+Still, having multiple H8::Context in different ruby threads let you run java/coffee scripts in
+parallel - what you can not have with pure MRI ruby!
 
 ## Main difference from therubyracer/features not ready
 
