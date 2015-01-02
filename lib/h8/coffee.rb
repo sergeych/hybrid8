@@ -25,7 +25,7 @@ module H8
     # Compile coffeescript and return javascript. Keyword parameters are
     # passed to H8::Context#eval - like time limits and so on.
     #
-    # This method IS THREAD SAFE, it shares single
+    # This method IS THREAD SAFE, though it shares single
     # compiler instance across all threads with a mutex.
     def self.compile src, ** kwargs
       @@mutex.synchronize {

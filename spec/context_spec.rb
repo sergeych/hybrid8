@@ -4,16 +4,16 @@ require 'h8'
 describe 'context' do
 
   it 'should create' do
-    cxt = H8::Context.new
+    cxt       = H8::Context.new
     cxt[:one] = 1
     cxt.eval("");
     # cxt.eval("'Res: ' + (2+5);")
   end
 
   it 'should gate simple values to JS context' do
-    cxt = H8::Context.new foo: 'hello', bar: 'world'
+    cxt        = H8::Context.new foo: 'hello', bar: 'world'
     cxt[:sign] = '!'
-    res = cxt.eval "foo+' '+bar+sign;"
+    res        = cxt.eval "foo+' '+bar+sign;"
     res.should == 'hello world!'
     cxt.set_all one: 101, real: 1.21
     cxt.eval("one + one;").should == 202
@@ -21,25 +21,25 @@ describe 'context' do
   end
 
   it 'should gate H8::Values back to JS context' do
-    cxt = H8::Context.new
-    obj = cxt.eval "('che bel');"
+    cxt         = H8::Context.new
+    obj         = cxt.eval "('che bel');"
     cxt[:first] = obj
-    res = cxt.eval "first + ' giorno';"
+    res         = cxt.eval "first + ' giorno';"
     res.should == 'che bel giorno'
   end
 
   it 'should not gate H8::Values between contexts' do
-    cxt = H8::Context.new
-    obj = cxt.eval "({res: 'che bel'});"
+    cxt         = H8::Context.new
+    obj         = cxt.eval "({res: 'che bel'});"
     # This should be ok
     cxt[:first] = obj
-    res = cxt.eval "first.res + ' giorno';"
+    res         = cxt.eval "first.res + ' giorno';"
     res.should == 'che bel giorno'
     # And that should fail
     cxt1 = H8::Context.new
-    expect( -> {
+    expect(-> {
       cxt1[:first] = obj
-      res = cxt1.eval "first.res + ' giorno';"
+      res          = cxt1.eval "first.res + ' giorno';"
     }).to raise_error(H8::Error)
   end
 
@@ -54,7 +54,7 @@ describe 'context' do
   end
 
   it 'should limit script execution time' do
-    cxt = H8::Context.new
+    cxt    = H8::Context.new
     # cxt[:print] = -> (*args) { puts args.join(' ')}
     script = <<-End
       var start = new Date();
@@ -67,7 +67,7 @@ describe 'context' do
     End
     # end
     t = Time.now
-    expect( -> {
+    expect(-> {
       c2 = cxt.eval script, max_time: 0.2
     }).to raise_error(H8::TimeoutError)
     (Time.now - t).should < 0.25
@@ -89,33 +89,39 @@ describe 'context' do
       print(g.next().value);
       print(g.next(1).value);
     End
-    c = H8::Context.new
-    c[:print] = -> (*args) { args.join(' ')}
+    c         = H8::Context.new
+    c[:print] = -> (*args) { args.join(' ') }
     c.eval script
   end
 
   it 'should work in many threads' do
-    pending
-    sum = 0
-    valid = 0
-    n   = 10
-    contexts = []
-    tt  = n.times.map { |n|
-      valid += (n+1)*100 + 10
-      Thread.start {
-        cxt         = H8::Context.new
-        contexts << cxt
+    # pending
+    sum      = 0
+    mutex = Mutex.new
+    valid    = 0
+    n        = 10
+    tt = []
+    n.times { |n|
+      cxt = nil
+      t = Thread.start {
+        cxt = H8::Context.new
         cxt[:array] = 100024.times.map { |x| x*(n+1) }
-        cxt[:n] = n+1
-        sum         += cxt.eval('result = array[100] + 10')
+        cxt[:n]     = n+1
+        mutex.synchronize {
+          valid += (n+1)*100 + 10
+          sum         += cxt.eval('result = array[100] + 10')
+        }
+        tt << OpenStruct.new({ thread: t, number: n, context: cxt })
       }
     }
-    tt.each &:join
-    sum.should == valid
+    tt.each{ |x| x.thread.join }
+    mutex.synchronize {
+      sum.should == valid
+    }
     GC.start
     # Cross-thread access
-    contexts.each { |cxt|
-      s, n = cxt.eval('data = [result,n]')
+    tt.each { |x|
+      s, n = x.context.eval('data = [result,n]')
       s.should == 100*n + 10
     }
   end

@@ -37,12 +37,12 @@ uncaught javascript exceptions raise ruby error in ruby code.
 
 - Integrated CoffeeScript support
 
-## Main difference from therubyracer/features not ready
+- H8 is thread safe (using Lockers) and releases gvl when executing js code (and reqcquires it as
+need), thus other ruby threads can work in parallel with javascript executing threads. Still,
+h8 does not releases Locker when calling ruby code from javascript - for performance considerations.
 
-- H8 is thread safe (uses Lockers) but script is executed in the calling ruby thread without
-releasing gvl so other ruby threads can not perform in parallel with js/coffee thread. We are
-working on it, as simply releasing GVL and reacquring it on any call to ruby VM may severely
-degrade performance.
+
+## Main difference from therubyracer/features not ready
 
 - labmda/proc passed as var to the context **does not receives first (this) argument
 automatically!**

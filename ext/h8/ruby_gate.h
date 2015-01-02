@@ -54,30 +54,34 @@ public:
 	virtual ~RubyGate() {
 	}
 
-	Isolate* isolate() const noexcept { return context->getIsolate(); }
+	Isolate* isolate() const noexcept {
+		return context->getIsolate();
+	}
 
-	H8* getH8() { return context; }
+	H8* getH8() {
+		return context;
+	}
 
 protected:
 	/**
 	 * Perform rb_rescue call to 'call' callback, and invoke block with value returned by callback
 	 * unless a ruby exception is caught, in which a correct JsError is thrown.
 	 */
-	void rescued_call(VALUE rb_args, VALUE (*call)(VALUE),const std::function<void(VALUE)> &block);
+	void rescued_call(VALUE rb_args, VALUE (*call)(VALUE),
+			const std::function<void(VALUE)> &block);
 
 	/**
 	 * Convert some v8 parameters-like object to ruby arguments array, allocating
 	 * extra slots in array if need
 	 */
-	template <class T>
+	template<class T>
 	VALUE ruby_args(const T& args, unsigned extras = 0) {
 		unsigned n = args.Length();
-		VALUE rb_args = rb_ary_new2(n+extras);
+		VALUE rb_args = rb_ary_new2(n + extras);
 		for (unsigned i = 0; i < n; i++)
 			rb_ary_push(rb_args, context->to_ruby(args[i]));
 		return rb_args;
 	}
-
 
 	/**
 	 * Ruby callable callback for rb_rescue and like. Args [0..-2] are call arguments,
@@ -94,27 +98,33 @@ protected:
 	/**
 	 * callback for rb_rescue. Sets last_ruby_error.
 	 */
-	static VALUE rescue_callback(VALUE me,VALUE exception_object);
+	static VALUE rescue_callback(VALUE me, VALUE exception_object);
 
-	void getProperty(Local<String> name, const PropertyCallbackInfo<Value> &info);
-	void setProperty(Local<String> name, Local<Value> value,const PropertyCallbackInfo<Value> &info);
+	void getProperty(Local<String> name,
+			const PropertyCallbackInfo<Value> &info);
+	void setProperty(Local<String> name, Local<Value> value,
+			const PropertyCallbackInfo<Value> &info);
 
 	void getIndex(uint32_t index, const PropertyCallbackInfo<Value> &info);
-	void setIndex(uint32_t index, Local<Value> value,const PropertyCallbackInfo<Value> &info);
+	void setIndex(uint32_t index, Local<Value> value,
+			const PropertyCallbackInfo<Value> &info);
 private:
 
 	void doObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 	static void ObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-	static void mapGet(Local<String> name, const PropertyCallbackInfo<Value> &info);
-	static void mapSet(Local<String> name, Local<Value> value,const PropertyCallbackInfo<Value> &info);
+	static void mapGet(Local<String> name,
+			const PropertyCallbackInfo<Value> &info);
+	static void mapSet(Local<String> name, Local<Value> value,
+			const PropertyCallbackInfo<Value> &info);
 
-	static void indexGet(uint32_t index, const PropertyCallbackInfo<Value> &info);
-	static void indexSet(uint32_t index, Local<Value> value, const PropertyCallbackInfo<Value> &info);
+	static void indexGet(uint32_t index,
+			const PropertyCallbackInfo<Value> &info);
+	static void indexSet(uint32_t index, Local<Value> value,
+			const PropertyCallbackInfo<Value> &info);
 
 	void throw_js();
-
 
 	friend class H8;
 

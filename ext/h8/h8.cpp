@@ -70,9 +70,8 @@ struct CallerParams {
 
 static void* script_caller(void* param) {
 	CallerParams *cp = (CallerParams*) param;
-	puts("Scaller");
+	cp->h8->setGvlReleased(true);
 	cp->result = cp->script->Run();
-	puts("Script appears to be done");
 	return NULL;
 }
 
@@ -90,14 +89,10 @@ static void unblock_script(void* param) {
 
 void h8::H8::invoke(v8::Handle<v8::Script> script, Local<Value>& result) {
 #if 1
-	puts("WILLRRRR");
 	CallerParams cp = { this, script, result };
 	rb_interrupted = false;
-	gvl_released = true;
-	puts("> in");
-	rb_thread_call_without_gvl(script_caller, &cp, unblock_script, this);
-	puts("< out");
-	gvl_released = false;
+	rb_thread_call_without_gvl(script_caller, &cp, NULL, NULL);
+	setGvlReleased(false);
 #else
 	gvl_released = false;
 	result = script->Run();
