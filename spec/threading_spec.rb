@@ -18,7 +18,7 @@ describe 'threading' do
     @context[:end] = @end_time
   end
 
-  it 'without tout: should run JS/ruby threads in parallel' do
+  it 'should run JS/ruby threads in parallel' do
     cnt2 = 0
     Thread.start {
       cnt2 += 1 while Time.now.to_i < @end_time
