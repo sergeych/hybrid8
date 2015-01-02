@@ -74,6 +74,26 @@ describe 'context' do
     cxt.eval('(last-start)/1000').should < 250
   end
 
+  it 'should have generators' do
+    script = <<-End
+      function* f(base) {
+        var count = base;
+        var end = base +3;
+        print("F is calleed", count);
+        while(count < end) {
+          var r = yield count++;
+          print("yield returned", r);
+        }
+      }
+      var g = f(100);
+      print(g.next().value);
+      print(g.next(1).value);
+    End
+    c = H8::Context.new
+    c[:print] = -> (*args) { args.join(' ')}
+    c.eval script
+  end
+
   it 'should work in many threads' do
     sum = 0
     valid = 0

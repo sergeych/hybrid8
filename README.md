@@ -8,7 +8,8 @@ This gem was intended to replace therubyracer for many reasons:
 * therubyracer has critical bugs that are not fixed for a long time, under load it produces
 numerous frequent crashes.
 
-* therubyracer still uses antique version of V8, H8 uses the latest 3.31 branch
+* therubyracer still uses antique version of V8, H8 uses the latest 3.31 branch, which, for example,
+has the generators support.
 
 * H8 is designed to provide very tight and effective integration of two allocation systems and
 object models, passing the same objects between different systems wrapping and unwrapping them
