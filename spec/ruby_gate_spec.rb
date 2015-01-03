@@ -150,6 +150,7 @@ describe 'ruby gate' do
       e.name.should == 'Error'
       e.message.should =~ /test/
       e.javascript_backtrace.should =~ /at bad \(eval\:4\:17\)/
+      e.to_s.should =~ /at bad \(eval\:4\:17\)/
     end
   end
 

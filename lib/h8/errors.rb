@@ -28,6 +28,9 @@ module H8
       @javascript_error ? @javascript_error.stack : message
     end
 
+    def to_s
+      javascript_backtrace
+    end
   end
 
   # Script execution is timed out (see H8::Context#eval timeout parameter)
