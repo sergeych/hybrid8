@@ -241,6 +241,7 @@ private:
 }
 
 #include "ruby_gate.h"
+#include <ruby/encoding.h>
 
 template<class T>
 VALUE h8::JsGate::to_ruby(H8* h8, const Handle<T>& value) {
@@ -249,7 +250,9 @@ VALUE h8::JsGate::to_ruby(H8* h8, const Handle<T>& value) {
 	if (v->IsString()) {
 		H8::Scope scope(h8);
 		String::Utf8Value res(v);
-		return *res ? rb_str_new2(*res) : Qnil;
+		if( *res )
+			return rb_enc_str_new(*res, res.length(), rb_utf8_encoding());
+		return Qnil;
 	}
 	if (v->IsInt32()) {
 		return INT2FIX(v->Int32Value());

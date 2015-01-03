@@ -66,6 +66,13 @@ describe 'ruby gate' do
       nil
     }
     cxt.eval('fn();').should == nil
+    cxt.eval('""+fn()').should == 'null'
+  end
+
+  it 'should convert strings to native string' do
+    cxt = H8::Context.new
+    cxt[:str] = "Пример строки"
+    cxt.eval('str.toLocaleUpperCase()').should == 'ПРИМЕР СТРОКИ'
   end
 
   it 'should pass through ruby objects across js code' do
