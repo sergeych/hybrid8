@@ -41,9 +41,7 @@ public:
 	}
 
 	virtual void free() {
-		AllocatedResource::free();
-		persistent().ClearWeak();
-		persistent().Reset();
+//		printf("RG::FREE(%p)\n", this);
 		delete this;
 	}
 
@@ -52,6 +50,10 @@ public:
 	}
 
 	virtual ~RubyGate() {
+//		puts("~RG()");
+		persistent().ClearWeak();
+		persistent().Reset();
+		// The rest is done by the base classes
 	}
 
 	Isolate* isolate() const noexcept {

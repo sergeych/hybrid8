@@ -135,6 +135,9 @@ public:
 		object()->Set(v8_name, h8->to_js(value));
 	}
 
+	/**
+	 * Access indexed property from ruby environment
+	 */
 	VALUE get_index(VALUE index) {
 		H8::Scope scope(h8);
 		return h8->to_ruby(object()->Get(NUM2INT(index)));
@@ -148,11 +151,18 @@ public:
 		return value()->IsString() ? Qtrue : Qfalse;
 	}
 
+	/**
+	 * True if the wrapped object is a function
+	 */
 	VALUE is_function() {
 		H8::Scope scope(h8);
 		return value()->IsFunction();
 	}
 
+	/**
+	 * Usually unneeded function, as H8 converts undefined values to
+	 * H8::Undefined
+	 */
 	VALUE is_undefined() {
 		H8::Scope scope(h8);
 		return value()->IsUndefined() ? Qtrue : Qfalse;
@@ -166,11 +176,18 @@ public:
 		return apply(h8->getContext()->Global(), args);
 	}
 
+	/**
+	 * apply wrapped function to a given 'this' value and arguments
+	 * wrapped in the ruby array
+	 */
 	VALUE apply(VALUE self, VALUE args) const {
 		H8::Scope scope(h8);
 		return apply(h8->gateObject(self), args);
 	}
 
+	/**
+	 * @return bound ruby H8::Context instance
+	 */
 	VALUE ruby_context() const {
 		return h8->ruby_context();
 	}
@@ -185,6 +202,8 @@ public:
 		persistent_value.Reset();
 		AllocatedResource::free();
 		h8 = 0;
+		// It is used no more, and it will be GC'd by ruby, until then
+		// we can not delete it!
 	}
 
 	virtual void rb_mark_gc() {
@@ -202,9 +221,11 @@ public:
 	virtual ~JsGate() {
 		if( h8 ) {
 			Locker l(h8->getIsolate());
+//			puts("~JsGate1");
 			persistent_value.Reset();
 		}
 		else {
+//			puts("~JsGate2");
 			persistent_value.Reset();
 		}
 	}

@@ -14,7 +14,6 @@ static void* unblock_caller(void *param) {
 }
 
 static void with_gvl(RubyGate *gate, const std::function<void(void)> &block) {
-//	v8::Unlocker unlock(gate->isolate());
 	H8 *h8 = gate->getH8();
 	if (h8->isGvlReleased()) {
 		h8->setGvlReleased(false);

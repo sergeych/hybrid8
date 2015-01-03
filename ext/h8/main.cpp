@@ -29,7 +29,7 @@ VALUE protect_ruby(const std::function<VALUE()> &block) {
 }
 
 static void rvalue_free(void* ptr) {
-	delete (JsGate*) ptr;
+	delete ((JsGate*) ptr);
 }
 
 static void rvalue_mark(void* ptr) {
@@ -135,10 +135,15 @@ static VALUE context_eval(VALUE self, VALUE script,VALUE timeout) {
 }
 
 static VALUE context_set_var(VALUE self, VALUE name, VALUE value) {
-	return protect_ruby([=] {
+	return protect_ruby([&] {
 		rc(self)->set_var(name, value);
 		return Qnil;
 	});
+}
+
+static VALUE context_force_gc(VALUE self) {
+	rc(self)->gc();
+	return Qnil;
 }
 
 static void context_free(void* ptr) {
@@ -179,6 +184,7 @@ void Init_h8(void) {
 	rb_define_method(context_class, "_eval", (ruby_method) context_eval, 2);
 	rb_define_method(context_class, "_set_var", (ruby_method) context_set_var,
 			2);
+	rb_define_method(context_class, "javascript_gc", (ruby_method) context_force_gc, 0);
 
 	value_class = rb_define_class_under(h8, "Value", rb_cObject);
 	rb_define_alloc_func(value_class, rvalue_alloc);

@@ -159,6 +159,11 @@ public:
 		getContext()->Global()->Set(js(name), to_js(value));
 	}
 
+	void gc() {
+//		puts("H8 GC");
+		while(!isolate->IdleNotification(500)) {}
+	}
+
 	Local<Value> to_js(VALUE ruby_value) {
 		switch (TYPE(ruby_value)) {
 		case T_STRING:

@@ -83,6 +83,44 @@ describe 'js_gate' do
     obj.foo.should == 'bar'
   end
 
+  it 'should keep alive references to js objects' do
+    cxt = H8::Context.new
+    jobj = cxt.eval 'var obj={foo: "bar"}; obj;'
+    jobj.foo.should == 'bar'
+    cxt.eval 'var obj = {foo: "buzz"};'
+    GC.start
+    cxt.javascript_gc()
+    jobj.foo.should == 'bar'
+    jobj.foo.should == 'bar'
+    wobj = WeakRef.new jobj
+    jobj = nil
+    GC.start
+    expect(wobj.weakref_alive?).not_to be_truthy
+    cxt.javascript_gc()
+    cxt = nil
+    GC.start
+  end
+
+  it 'should keep alive references to ruby objects' do
+    robj = 4096.times.map { |n| "-- #{n} --"}
+    wobj = WeakRef.new robj
+    cxt = H8::Context.new
+    cxt[:obj] = robj
+    GC.start
+    cxt.javascript_gc
+    expect(wobj.weakref_alive?).to be_truthy
+    robj = nil
+    GC.start
+    cxt.javascript_gc
+    expect(wobj.weakref_alive?).to be_truthy
+    cxt.eval 'obj = null;'
+    cxt[:obj] = 'nope'
+    cxt.javascript_gc
+    GC.start
+    # pending # Why weakref is not freeed here?
+    # expect(wobj.weakref_alive?).to be_falsey
+  end
+
   it 'should convert simple types to ruby' do
     res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122, pi: 3.1415 });")
     r   = res.foo.to_ruby
