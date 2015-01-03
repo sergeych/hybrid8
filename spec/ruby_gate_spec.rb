@@ -71,9 +71,18 @@ describe 'ruby gate' do
 
   it 'should convert strings to native string' do
     cxt = H8::Context.new
-    cxt[:str] = "Пример строки"
-    cxt.eval('str.toLocaleUpperCase()').should == 'ПРИМЕР СТРОКИ'
+    cxt[:str] = src = "Пример строки"
+    res = 'ПРИМЕР СТРОКИ'
+    cxt.eval('str.toLocaleUpperCase()').should == res
+    up = cxt.eval('fn = function(t) { return t.toLocaleUpperCase(); }')
+    up.call(src).should == res
   end
+
+  # it 'should convert arrays' do
+  #   cxt = H8::Context.new
+  #   cxt[:arr] = [1,100,2,200]
+  #   p cxt.eval('typeof arr')
+  # end
 
   it 'should pass through ruby objects across js code' do
     class MyObject
