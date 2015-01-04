@@ -25,7 +25,7 @@ module H8
     #  * ruby Class - creating a javascript constructor function that creates ruby
     #    class instance (any arguments) and gates it to use with js.
     def []= name, value
-      set_all name => value
+      set_all name.to_sym => value
     end
 
     # Execute a given script on the current context with optionally limited execution time.
@@ -42,6 +42,15 @@ module H8
       yield(self) if block_given?
       _eval script, timeout.to_i
     end
+
+    # Compile and execute coffeescript, taking same arguments as #eval.
+    #
+    # If you need to execute same script more than once consider first H8::Coffee.compile
+    # and cache compiled script.
+    def coffee script, ** kwargs
+      eval Coffee.compile script, **kwargs
+    end
+
 
     # Execute script in a new context with optionally set vars. @see H8#set_all
     # @return [Value] wrapped object returned by the script

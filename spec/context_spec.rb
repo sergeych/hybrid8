@@ -94,6 +94,27 @@ describe 'context' do
     c.eval script
   end
 
+  it 'should have coffee generators' do
+    script = <<-End
+      f = (base) ->
+        count = base;
+        end = base + 3;
+        print "F is calleed, \#{count}"
+        while count < end
+          r = yield count++
+          # print "yield returned \#{r}"
+      print 'we try'
+      g = f(100)
+      print g.next().value
+      print g.next().value
+      print g.next().value
+      print g.next().value
+    End
+    c         = H8::Context.new
+    c[:print] = -> (*args) { args.join(' ') }
+    c.coffee script
+  end
+
   it 'should work in many threads' do
     # pending
     sum   = 0

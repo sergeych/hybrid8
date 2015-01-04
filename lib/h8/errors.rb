@@ -8,15 +8,9 @@ module H8
   # The general error caused by the script execution, e.g. uncaught javascript exceptinos and like.
   # Check #message to see the cause.
   class JsError < Error
-    # Error message
-    attr :message
 
     # Javascript Error object. May be nil
     attr :javascript_error
-
-    def to_s
-      message
-    end
 
     # Error name
     def name
@@ -30,6 +24,10 @@ module H8
 
     def to_s
       javascript_backtrace
+    end
+
+    def message
+      to_s
     end
   end
 
