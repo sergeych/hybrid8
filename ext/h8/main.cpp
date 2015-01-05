@@ -126,11 +126,12 @@ inline H8* rc(VALUE self) {
 	return prcxt;
 }
 
-static VALUE context_eval(VALUE self, VALUE script,VALUE timeout) {
+static VALUE context_eval(VALUE self, VALUE script,VALUE timeout,VALUE script_name_ruby) {
 	return protect_ruby([&] {
 		H8* cxt = rc(self);//		v8::Locker l(cxt->getIsolate());
 		H8::Scope s(cxt);
-		return cxt->eval_to_ruby(StringValueCStr(script), FIX2INT(timeout));
+		const char* script_name = script_name_ruby != Qnil ? StringValueCStr(script_name_ruby) : NULL;
+		return cxt->eval_to_ruby(StringValueCStr(script), FIX2INT(timeout), script_name);
 	});
 }
 
@@ -181,7 +182,7 @@ void Init_h8(void) {
 	context_class = rb_define_class_under(h8, "Context", rb_cObject);
 	ruby_gate_class = rb_define_class_under(h8, "RubyGate", rb_cObject);
 	rb_define_alloc_func(context_class, context_alloc);
-	rb_define_method(context_class, "_eval", (ruby_method) context_eval, 2);
+	rb_define_method(context_class, "_eval", (ruby_method) context_eval, 3);
 	rb_define_method(context_class, "_set_var", (ruby_method) context_set_var,
 			2);
 	rb_define_method(context_class, "javascript_gc", (ruby_method) context_force_gc, 0);

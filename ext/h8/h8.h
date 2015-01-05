@@ -125,11 +125,11 @@ public:
 	 * 				 to this value, JsTimeoutError will be thrown if exceeded
 	 * \return the value returned by the script.
 	 */
-	Handle<Value> eval(const char* script_utf, unsigned max_ms = 0);
+	Handle<Value> eval(const char* script_utf, unsigned max_ms = 0,const char* script_name=NULL);
 
-	VALUE eval_to_ruby(const char* script_utf, int timeout = 0) {
+	VALUE eval_to_ruby(const char* script_utf, int timeout = 0,const char* script_name=NULL) {
 		// TODO: throw ruby exception on error
-		return to_ruby(eval(script_utf, timeout));
+		return to_ruby(eval(script_utf, timeout, script_name));
 	}
 
 	Handle<Context> getContext() {

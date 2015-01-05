@@ -30,7 +30,7 @@ describe 'pargser' do
     @v.should == 'value!'
     @defvalue.should == 'test'
 
-    doc = "\t-a\n\t\tflag to perform a action\n\t-c,-b\n\t--some value (default: test)\n\t-v value"
+    doc = "\t-a\n\t\tflag to perform a action\n\t-c,-b\n\t--some value (default: test)\n\t-v value (optional)"
     parser.keys_doc.should == doc
   end
 

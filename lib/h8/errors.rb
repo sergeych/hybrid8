@@ -14,12 +14,12 @@ module H8
 
     # Error name
     def name
-      @javascript_error.name ? @javascript_error.name : message
+      @javascript_error.name ? @javascript_error.name : @message
     end
 
     # String that represents stack trace if any as multiline string (\n separated)
     def javascript_backtrace
-      @javascript_error ? @javascript_error.stack : message
+      @javascript_error ? @javascript_error.stack : @message
     end
 
     def to_s

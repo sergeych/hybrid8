@@ -99,14 +99,16 @@ void h8::H8::invoke(v8::Handle<v8::Script> script, Local<Value>& result) {
 #endif
 }
 
-v8::Handle<v8::Value> h8::H8::eval(const char* script_utf, unsigned max_ms) {
+v8::Handle<v8::Value> h8::H8::eval(const char* script_utf, unsigned max_ms,const char* source_name) {
 	v8::EscapableHandleScope escape(isolate);
 	Local<Value> result;
 
 	Handle<v8::String> script_source = String::NewFromUtf8(isolate, script_utf);
 	v8::Handle<v8::Script> script;
 	JsCatcher try_catch(this);
-	v8::ScriptOrigin origin(String::NewFromUtf8(isolate, "eval"));
+	if( source_name == NULL)
+		source_name = "eval";
+	v8::ScriptOrigin origin(String::NewFromUtf8(isolate, source_name));
 
 	script = v8::Script::Compile(script_source, &origin);
 

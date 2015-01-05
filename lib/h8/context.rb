@@ -37,10 +37,10 @@ module H8
     #
     # @return [Value] wrapped object returned by the script
     # @raise [H8::TimeoutError] if the timeout was set and expired
-    def eval script, max_time: 0, timeout: 0
+    def eval script, max_time: 0, timeout: 0, file_name: nil
       timeout = max_time * 1000 if max_time > 0
       yield(self) if block_given?
-      _eval script, timeout.to_i
+      _eval script, timeout.to_i, file_name
     end
 
     # Compile and execute coffeescript, taking same arguments as #eval.
@@ -54,8 +54,8 @@ module H8
 
     # Execute script in a new context with optionally set vars. @see H8#set_all
     # @return [Value] wrapped object returned by the script
-    def self.eval script, **kwargs
-      Context.new(** kwargs).eval script
+    def self.eval script, file_name: nil, **kwargs
+      Context.new(** kwargs).eval script, file_name: file_name
     end
 
     # Secure gate for JS to securely access ruby class properties (methods with no args)
@@ -119,21 +119,5 @@ module H8
       klass.new *H8::arguments_to_a(arguments.to_ruby.values)
     end
   end
-
-  # class RacerContext < Context
-  #   protected
-  #   def set_var name, value
-  #     if value.is_a?(Proc)
-  #       n1 = "___compat_#{name}"
-  #       _eval "function #{name}() { return #{n1}( this, arguments); }", 0
-  #       super n1, -> (this, arguments) {
-  #         args = [this] + H8::arguments_to_a(arguments)
-  #         value.call *args
-  #       }
-  #     else
-  #       super name, value
-  #     end
-  #   end
-  # end
 
 end

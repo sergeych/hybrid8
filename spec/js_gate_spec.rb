@@ -227,7 +227,21 @@ describe 'js_gate' do
     expect(-> {
       res.doAdd(10, 1).should == 111
     }).to raise_error(H8::JsError) { |e|
-            e.message.should == "Uncaught Error: Test error"
+            e.message.should =~ /Test error/
+          }
+  end
+
+  it 'should properly show syntax errors' do
+    script = <<-End
+      // Good line
+      var x = 112;
+      kjljl44; // bad line
+      122; // good line
+    End
+    expect(->{
+      H8::Context.new.eval script, file_name: 'test.js'
+    }).to raise_error(H8::JsError) { |e|
+            e.message.should =~ /at test\.js\:3\:7/
           }
   end
 
