@@ -36,13 +36,15 @@ module H8
     # Create compiler instance.
     def initialize
       @context = H8::Context.new
-      @context.eval open(File.join(File.dirname(File.expand_path(__FILE__)),'/coffee-script.js'), 'r').read
+      @context.eval read_script 'coffee-script.js'
+      eval read_script('globals.coffee')
     end
 
     # compile coffeescript source and return compiled javascript
-    def compile src, **kwargs
+    def compile src, file_name: nil, **kwargs
       @context[:cs] = src
-      res = @context.eval('CoffeeScript.compile(cs)')
+      @context[:filename] = file_name
+      res = @context.eval('CoffeeScript.compile(cs,{filename: filename})')
       @context[:cs] = nil # Sources can be big...
       res
     end
@@ -51,6 +53,20 @@ module H8
     # to H8::Context#eval
     def eval src, **kwargs
       @context.eval compile(src), **kwargs
+    end
+
+    # Provide context with CoffeeScrip compiler loaded
+    def context
+      @context
+    end
+
+    private
+
+    @@base = File.expand_path File.join(File.dirname(__FILE__), '../scripts')
+    @@cache = {}
+
+    def read_script name
+      @@cache[name] ||= open(File.join(@@base, name), 'r').read
     end
   end
 
