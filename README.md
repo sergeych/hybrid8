@@ -4,8 +4,9 @@ _Warning_ this gem is a public beta at the moment - beta testers are welcome!It 
 yet production stable - we haven't yet tried.
 
 _Current implementation is somewhat slower than it could by the price of letting ruby threads
-and javascript codes in different H8::Context instances run in parallel in multicore hardware_.
-Let me know whether it worth degraded performance on ruby-to-js and back calls.
+and javascript code in different H8::Context instances run in parallel in multicore hardware_.
+Let me know whether it worth degraded performance on ruby-to-js and back calls. In other word,
+in 8-core you can create 8 H8::Contexts and run them truly in parallel.
 
 This gem was intended to replace therubyracer for many reasons:
 
