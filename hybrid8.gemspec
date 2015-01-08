@@ -34,7 +34,7 @@ spec = Gem::Specification.new do |spec|
   spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "rspec", '~> 3.1'
 
-  # spec.add_dependency 'libv8'
+  spec.add_dependency 'pargser'
 end
 
 Gem::PackageTask.new(spec) do |pkg|

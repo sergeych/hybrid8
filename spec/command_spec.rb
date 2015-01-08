@@ -42,7 +42,7 @@ describe 'cli' do
   end
 
   it 'should read files' do
-    path   = make_path '../lib/h8/coffee-script.js'
+    path   = make_path '../lib/scripts/coffee-script.js'
     length = "#{open(path).read.length}\n"
     run("print open('#{path}').read().length").should == length
     run("open('#{path}', 'r', (f) -> puts (" "+f.read().length) )").should == length

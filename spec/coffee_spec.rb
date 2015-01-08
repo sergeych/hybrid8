@@ -51,7 +51,7 @@ describe 'coffeescript' do
         undefined
 
       # fna()
-      puts globalsIncluded
+      # puts globalsIncluded
     END
     script = <<-END
       function require(name) {
@@ -69,7 +69,6 @@ describe 'coffeescript' do
     # cxt[:src] = 'return "hello"'
     begin
     res = cxt.eval script, file_name: 'extest.coffee'
-    p res
     rescue Exception=>e
       puts e
     end
