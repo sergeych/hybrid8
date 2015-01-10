@@ -10,15 +10,15 @@ in 8-core you can create 8 H8::Contexts and run them truly in parallel.
 
 This gem was intended to replace therubyracer for many reasons:
 
-* therubyracer has critical bugs that are not fixed for a long time, under load it produces
-numerous frequent crashes.
+* therubyracer had critical bugs (that was hte reason for this) that are not fixed for a long time,
+under load it produces numerous frequent random crashes.
 
-* therubyracer still uses antique version of V8, H8 uses the latest 3.31 branch, which, for example,
-has the generators support.
+* therubyracer still uses antique version of V8, H8 uses the latest 3.31 branch, which has manu
+improvements, harmony support and so on.
 
-* H8 is designed to provide very tight and effective integration of two allocation systems and
-object models, passing the same objects between different systems wrapping and unwrapping them
-rather than copying and changing
+* H8 is designed to provide tight and integration of two allocation systems and object models,
+passing the same objects between different systems wrapping and unwrapping them rather than copying
+and changing them.
 
 * We hope that by the cost non significant changes we will provide faster execution. And might v8
 modern branch will help us with it ;)
@@ -48,12 +48,12 @@ in separate threads.
 
 Due to v8 and ruby MRI limitations, only one ruby thread can access any given H8::Context (e.g.
 execute javascript code in it), and, as usual, all ruby threads are locked by a single mitex (gvl).
-Still, having multiple H8::Context in different ruby threads let you run java/coffee scripts in
-parallel - what you can not have with pure MRI ruby!
+Still, having multiple H8::Context in different ruby threads let you run many java/coffee scripts in
+parallel with a single ruby thread - what you can not have with pure MRI ruby.
 
 ## Main difference from therubyracer/features not ready
 
-- labmda/proc passed as var to the context **does not receives first (this) argument
+- lambda/proc passed as var to the context **does not receives first (this) argument
 automatically!**
 
 E.g. rubyracer code
