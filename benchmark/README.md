@@ -1,6 +1,7 @@
 The most interesting benchmark is the classic knightsmove task. For 5 repitions 7x7 board on my i7
 it gives:
 
+    hybrid8/benchmark$ ruby knightsmove.rb
     coffee	: 3.970693
     ruby	: 13.152436 scaled: 65.76218
     total	: 13.152677
