@@ -7,7 +7,7 @@
 #include <ruby/thread.h>
 #include "ruby_gate.h"
 
-void h8::JsError::raise() {
+void h8::JsError::raise() const {
 	if (has_js_exception) {
 		VALUE ruby_exception;
 		{
@@ -39,7 +39,11 @@ void h8::JsError::raise() {
 	}
 }
 
-void h8::JsTimeoutError::raise() {
+const char* h8::JsError::what() const noexcept {
+	return reason;
+}
+
+void h8::JsTimeoutError::raise() const {
 	rb_raise(js_timeout_exception, "timeout expired");
 }
 
@@ -52,6 +56,8 @@ Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 		} else
 			return gate->value();
 	}
+	if( ruby_value == Rundefined )
+		return v8::Undefined(isolate);
 	// Generic Ruby object
 	RubyGate *gate = new RubyGate(this, ruby_value);
 	return gate->handle(isolate);

@@ -106,14 +106,30 @@ void h8::RubyGate::rescued_call(VALUE rb_args, VALUE (*call)(VALUE),
 		const std::function<void(VALUE)> &block) {
 	VALUE res;
 	{
-		Unlocker u(context->getIsolate());
 		last_ruby_error = Qnil;
 		VALUE me = Data_Wrap_Struct(ruby_gate_class, 0, 0, this);
+		Unlocker u(context->getIsolate());
 		res = rb_rescue((ruby_method) (call), rb_args,
 				(ruby_method) (rescue_callback), me);
 	}
-	if (last_ruby_error == Qnil)
-		block(res);
+
+	if (last_ruby_error == Qnil) {
+		// This could be removed later, as normally here shouldn't be any
+		// exceptions...
+		try {
+			block(res);
+		}
+		catch(JsError& e) {
+			Local<v8::Object> error = v8::Exception::Error(
+					context->js(e.what())).As<v8::Object>();
+			context->getIsolate()->ThrowException(error);
+		}
+		catch(...) {
+			Local<v8::Object> error = v8::Exception::Error(
+					context->js("unknown exception (inner bug)")).As<v8::Object>();
+			context->getIsolate()->ThrowException(error);
+		}
+	}
 	else
 		throw_js();
 }

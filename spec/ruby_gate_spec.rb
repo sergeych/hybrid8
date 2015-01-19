@@ -60,13 +60,25 @@ describe 'ruby gate' do
     GC.start
   end
 
-  it 'should convert nil' do
+  it 'should convert nil, true, false and undefined' do
     cxt      = H8::Context.new
+    value = false
     cxt[:fn] = -> {
-      nil
+      [nil, true, false, value, H8::Undefined]
     }
-    cxt.eval('fn();').should == nil
-    cxt.eval('""+fn()').should == 'null'
+    cxt.eval('true').should == true
+    cxt.eval('fn();').should == [nil, true, false, false, H8::Undefined]
+    cxt.eval('""+fn()[0]').should == 'null'
+    # cxt.eval("fn().join(',').toString()").should == ',true,false,false,undefined'
+    expect(cxt.eval("(fn()[4] == undefined).toString()")).to eql 'true'
+    expect(cxt.eval("(fn()[0] == undefined).toString()")).to eql 'true'
+    cxt.eval("(fn()[1])").should == true
+    cxt.eval("(fn()[2])").should == false
+    cxt.eval("(fn()[3])").should == false
+    cxt.eval("(fn()[4])").should == H8::Undefined
+    cxt.eval("(fn()[0])").should == nil
+    cxt.eval('true').inspect.should == 'true'
+    cxt.eval('false').inspect.should == 'false'
   end
 
   it 'should convert strings to native string' do

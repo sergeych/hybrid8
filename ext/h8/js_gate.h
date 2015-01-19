@@ -263,6 +263,12 @@ VALUE h8::JsGate::to_ruby(H8* h8, const Handle<T>& value) {
 	if( v->IsUndefined()) {
 		return Rundefined;
 	}
+	if( v->IsTrue() ) {
+		return Qtrue;
+	}
+	if( v->IsFalse() ) {
+		return Qfalse;
+	}
 	if( v->IsNull() ) {
 		return Qnil;
 	}

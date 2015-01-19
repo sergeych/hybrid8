@@ -111,7 +111,7 @@ protected:
 private:
 	static void WeakCallback(
 			const v8::WeakCallbackData<v8::Object, ObjectWrap>& data) {
-		puts("WEAK CALLBACK!!");
+//		puts("WEAK CALLBACK!!");
 		v8::Isolate* isolate = data.GetIsolate();
 		v8::HandleScope scope(isolate);
 		ObjectWrap* wrap = data.GetParameter();

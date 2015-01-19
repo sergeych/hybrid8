@@ -20,6 +20,8 @@ extern VALUE Rundefined;
 extern ID id_is_a;
 extern ID id_safe_call;
 
+VALUE protect_ruby(const std::function<VALUE()> &block);
+
 namespace h8 {
 
 /// Allocate ruby H8::Context class (wrapper for h8::H8), ruby utility function
@@ -50,7 +52,7 @@ public:
 	/**
 	 * Call it with a proper exception class and be careful - after this call no code will be executed!
 	 */
-	virtual void raise();
+	virtual void raise() const;
 
 	Local<Message> message() const;
 
@@ -58,7 +60,9 @@ public:
 
 	Local<Value> stacktrace() const;
 
-	virtual ~JsError() noexcept {
+	virtual const char* what() const noexcept;
+
+	virtual ~JsError() {
 		_message.Reset();
 		_exception.Reset();
 	}
@@ -75,7 +79,7 @@ public:
 	JsTimeoutError(H8* h8) :
 			JsError(h8, NULL) {
 	}
-	virtual void raise();
+	virtual void raise() const;
 };
 
 class H8 {
@@ -91,12 +95,9 @@ public:
 
 	public:
 		Scope(H8* cxt) :
-				locker(cxt->getIsolate()),
-				handle_scope(cxt->getIsolate()),
-				isolate_scope(cxt->getIsolate()),
-				context_scope(cxt->getContext()),
-				rcontext(cxt)
-		{
+				locker(cxt->getIsolate()), handle_scope(cxt->getIsolate()), isolate_scope(
+						cxt->getIsolate()), context_scope(cxt->getContext()), rcontext(
+						cxt) {
 		}
 	};
 
@@ -125,9 +126,11 @@ public:
 	 * 				 to this value, JsTimeoutError will be thrown if exceeded
 	 * \return the value returned by the script.
 	 */
-	Handle<Value> eval(const char* script_utf, unsigned max_ms = 0,const char* script_name=NULL);
+	Handle<Value> eval(const char* script_utf, unsigned max_ms = 0,
+			const char* script_name = NULL);
 
-	VALUE eval_to_ruby(const char* script_utf, int timeout = 0,const char* script_name=NULL) {
+	VALUE eval_to_ruby(const char* script_utf, int timeout = 0,
+			const char* script_name = NULL) {
 		// TODO: throw ruby exception on error
 		return to_ruby(eval(script_utf, timeout, script_name));
 	}
@@ -161,7 +164,8 @@ public:
 
 	void gc() {
 //		puts("H8 GC");
-		while(!isolate->IdleNotification(500)) {}
+		while (!isolate->IdleNotification(500)) {
+		}
 	}
 
 	Local<Value> to_js(VALUE ruby_value) {
@@ -176,6 +180,10 @@ public:
 			return v8::Undefined(isolate);
 		case T_NIL:
 			return v8::Null(isolate);
+		case T_TRUE:
+			return v8::True(isolate);
+		case T_FALSE:
+			return v8::False(isolate);
 		case T_ARRAY:
 		case T_HASH:
 		case T_DATA:
@@ -202,15 +210,21 @@ public:
 
 	void ruby_mark_gc() const;
 
-	bool isGvlReleased() const noexcept { return gvl_released; }
+	bool isGvlReleased() const noexcept {
+		return gvl_released;
+	}
 
-	void setGvlReleased(bool state) noexcept { gvl_released = state; }
+	void setGvlReleased(bool state) noexcept {
+		gvl_released = state;
+	}
 
 	void setInterrupted() {
 		rb_interrupted = true;
 	}
 
-	bool isInterrupted() const { return rb_interrupted; }
+	bool isInterrupted() const {
+		return rb_interrupted;
+	}
 
 	virtual ~H8();
 
@@ -244,7 +258,7 @@ inline h8::JsError::JsError(H8* h8, Local<Message> message,
 		Local<Value> exception) :
 		h8(h8), _message(h8->getIsolate(), message), _exception(
 				h8->getIsolate(), exception), has_js_exception(true), reason(
-				NULL) {
+		NULL) {
 }
 
 inline Local<Message> h8::JsError::message() const {

@@ -21,7 +21,12 @@ VALUE protect_ruby(const std::function<VALUE()> &block) {
 	try {
 		return block();
 	} catch (JsError& e) {
-		e.raise();
+		try {
+			e.raise();
+		}
+		catch(...) {
+			rb_raise(js_exception, "error while converting JS exception (pls report a bug)");
+		}
 	} catch (...) {
 		rb_raise(rb_eStandardError, "unknown error in JS");
 	}
@@ -126,13 +131,14 @@ inline H8* rc(VALUE self) {
 	return prcxt;
 }
 
-static VALUE context_eval(VALUE self, VALUE script,VALUE timeout,VALUE script_name_ruby) {
+static VALUE context_eval(VALUE self, VALUE script, VALUE timeout,
+		VALUE script_name_ruby) {
 	return protect_ruby([&] {
-		H8* cxt = rc(self);//		v8::Locker l(cxt->getIsolate());
-		H8::Scope s(cxt);
-		const char* script_name = script_name_ruby != Qnil ? StringValueCStr(script_name_ruby) : NULL;
-		return cxt->eval_to_ruby(StringValueCStr(script), FIX2INT(timeout), script_name);
-	});
+		H8* cxt = rc(self); //		v8::Locker l(cxt->getIsolate());
+			H8::Scope s(cxt);
+			const char* script_name = script_name_ruby != Qnil ? StringValueCStr(script_name_ruby) : NULL;
+			return cxt->eval_to_ruby(StringValueCStr(script), FIX2INT(timeout), script_name);
+		});
 }
 
 static VALUE context_set_var(VALUE self, VALUE name, VALUE value) {
@@ -185,7 +191,8 @@ void Init_h8(void) {
 	rb_define_method(context_class, "_eval", (ruby_method) context_eval, 3);
 	rb_define_method(context_class, "_set_var", (ruby_method) context_set_var,
 			2);
-	rb_define_method(context_class, "javascript_gc", (ruby_method) context_force_gc, 0);
+	rb_define_method(context_class, "javascript_gc",
+			(ruby_method) context_force_gc, 0);
 
 	value_class = rb_define_class_under(h8, "Value", rb_cObject);
 	rb_define_alloc_func(value_class, rvalue_alloc);
@@ -214,7 +221,8 @@ void Init_h8(void) {
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 	js_exception = rb_define_class_under(h8, "JsError", h8_exception);
-	js_timeout_exception = rb_define_class_under(h8, "TimeoutError", js_exception);
+	js_timeout_exception = rb_define_class_under(h8, "TimeoutError",
+			js_exception);
 
 	VALUE u_class = rb_define_class_under(h8, "UndefinedClass", rb_cObject);
 	Rundefined = rb_funcall(u_class, rb_intern("instance"), 0);
