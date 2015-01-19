@@ -27,4 +27,5 @@ mkmf.log
 .ruby-version
 .*swp
 .*swo
-
+**/node_modules
+test.js

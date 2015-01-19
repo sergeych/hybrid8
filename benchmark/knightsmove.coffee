@@ -43,6 +43,18 @@ class Solver
       res.push ( (if x==0 then '  .' else pad(x,3)) for x in @desk[r]).join('')
     res.join "\n"
 
-return (n, left) ->
-  new Solver(n, left).toString()
+timing = (name, cb) ->
+  start = new Date().getTime()
+  res = cb()
+  console.log("#{name}: #{(new Date().getTime() - start)/1000}")
+  res
+
+result = timing 'KN h8', ->
+ new Solver(7, 3).toString()
+console.log result
+
+
+
+# return (n, left) ->
+  # new Solver(n, left).toString()
 

@@ -68,3 +68,4 @@ if res1 != res2
   puts "Coffee:\n#{res2}"
 end
 
+puts res1
