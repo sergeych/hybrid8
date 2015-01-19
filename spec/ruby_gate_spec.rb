@@ -185,7 +185,7 @@ describe 'ruby gate' do
   context 'accessing ruby code' do
     class Base
       def base
-        raise "It should not be called"
+        'base called'
       end
 
       attr_accessor :do_throw
@@ -239,8 +239,14 @@ describe 'ruby gate' do
       cxt[:foo] = Test.new
       cxt.eval('foo.ro').should == 'readonly'
       cxt.eval('foo.rw').should == 'not initialized'
-      cxt.eval('foo.base').should == H8::Undefined
+      cxt.eval('foo.base').should == 'base called'
       cxt.eval('foo.send').should == H8::Undefined
+      cxt.eval('foo.freeze').should == H8::Undefined
+      cxt.eval('foo.dup').should == H8::Undefined
+      cxt.eval('foo.eval').should == H8::Undefined
+      cxt.eval('foo.extend').should == H8::Undefined
+      cxt.eval('foo.instance_variable_get').should == H8::Undefined
+      cxt.eval('foo.object_id').should == H8::Undefined
       cxt.eval('foo.prot_method').should == H8::Undefined
       cxt.eval('foo.priv_method').should == H8::Undefined
       cxt.eval('foo.test_args').should be_kind_of(Proc)
@@ -255,7 +261,7 @@ describe 'ruby gate' do
       cxt.eval('foo.rw').should == 'hello'
     end
 
-    context 'no interceptors' do
+    context 'do interceptors' do
       class Test2 < Base
         attr :ro
         attr_accessor :rw
@@ -287,7 +293,7 @@ describe 'ruby gate' do
         cxt[:foo] = Test2.new
         cxt.eval('foo.ro').should == 'readonly'
         cxt.eval('foo.rw').should == 'not initialized'
-        cxt.eval('foo.base').should == H8::Undefined
+        cxt.eval('foo.base').should == 'base called'
         cxt.eval('foo.send').should == H8::Undefined
         cxt.eval('foo.prot_method').should == H8::Undefined
         cxt.eval('foo.priv_method').should == H8::Undefined

@@ -59,7 +59,7 @@ module H8
     end
 
     # Secure gate for JS to securely access ruby class properties (methods with no args)
-    # and methods. This class implements security policy! Overriding this method could
+    # and methods. This class implements security policy. Overriding this method could
     # breach security and provide full access to ruby object trees.
     #
     # It has very complex logic so the security model update should be done somehow
@@ -68,7 +68,8 @@ module H8
       method = method.to_sym
       begin
         m = instance.public_method(method)
-        if m.owner == instance.class
+        owner = m.owner
+        if owner != Object.class && owner != Kernel && owner != BasicObject.class
           return m.call(*args) if method[0] == '[' || method[-1] == '='
           if m.arity != 0
             return -> (*args) { m.call *args }
