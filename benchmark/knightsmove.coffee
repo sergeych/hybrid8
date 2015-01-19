@@ -4,11 +4,11 @@ pad = (n, len) ->
   res = ' '+res while res.length < len
   res
 
-shifts = [[-2, +1], [-1, +2], [+1, +2], [+2, +1], [+2, -1], [-2, -1]]
+shifts = [[-2, +1], [-1, +2], [+1, +2], [+2, +1], [+2, -1], [+1, -2], [-1, -2], [-2, -1]]
 
 class Solver
 
-  constructor: (@n, @left_free) ->
+  constructor: (@n) ->
     @nn = @n * @n
     @n2 = @n + @n
     @desk = []
@@ -19,7 +19,7 @@ class Solver
 
   solve: (r, c) ->
     @desk[r][c] = ++@depth
-    return true if @depth + @left_free >= @nn
+    return true if @depth >= @nn
     for [r1, c1] in @moves(r, c)
       return true if @solve(r1, c1)
     @desk[r][c] = 0
@@ -49,12 +49,12 @@ timing = (name, cb) ->
   console.log("#{name}: #{(new Date().getTime() - start)/1000}")
   res
 
-result = timing 'KN h8', ->
- new Solver(7, 3).toString()
-console.log result
+#result = timing 'KN h8', ->
+# new Solver(7, 3).toString()
+#console.log result
 
 
 
-# return (n, left) ->
-  # new Solver(n, left).toString()
+return (n, left) ->
+  new Solver(n, left).toString()
 

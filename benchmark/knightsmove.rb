@@ -2,10 +2,9 @@ require './tools'
 
 class Solver
 
-  def initialize rank, leave_free=0
+  def initialize rank
     @n, @nn     = rank, rank*rank
     @n2         = @n+@n
-    @leave_free = leave_free
     @desk       = []
     @n.times { @desk << [0] * @n }
     @depth = 0
@@ -14,7 +13,7 @@ class Solver
 
   def solve r, c
     @desk[r][c] = (@depth+=1)
-    return true if @depth == @nn-@leave_free
+    return true if @depth >= @nn
     moves(r, c) { |r1, c1|
       return true if solve(r1, c1)
     }
@@ -23,7 +22,7 @@ class Solver
     false
   end
 
-  @@shifts = [[-2, +1], [-1, +2], [+1, +2], [+2, +1], [+2, -1], [-2, -1]]
+  @@shifts = [[-2, +1], [-1, +2], [+1, +2], [+2, +1], [+2, -1], [+1, -2], [-1, -2], [-2, -1]]
 
   def moves r, c
     @@shifts.each { |sr, sc|
@@ -52,13 +51,13 @@ end
 
 cs = js_context.eval coffee(:knightsmove)
 
-N, L = 7, 3
+N = 7
 
 res1 = res2 = 0
 timing('total') {
   tt = []
-  tt << Thread.start { timing('ruby') { res1 = Solver.new(N, L).to_s } }
-  tt << Thread.start { timing('coffee') { res2 = cs.call(N, L) } }
+  tt << Thread.start { timing('ruby', 1, 5) { res1 = Solver.new(N).to_s } }
+  tt << Thread.start { timing('coffee', 5) { res2 = cs.call(N) } }
   tt.each &:join
 }
 
@@ -68,4 +67,4 @@ if res1 != res2
   puts "Coffee:\n#{res2}"
 end
 
-puts res1
+# puts res1
