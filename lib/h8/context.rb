@@ -69,7 +69,7 @@ module H8
       begin
         m = instance.public_method(method)
         owner = m.owner
-        if owner != Object.class && owner != Kernel && owner != BasicObject.class
+        if can_access?(owner)
           return m.call(*args) if method[0] == '[' || method[-1] == '='
           if m.arity != 0
             return -> (*args) { m.call *args }
@@ -86,14 +86,22 @@ module H8
                        end
         begin
           m = instance.public_method(method)
-          if m.owner == instance.class
-            return m.call(*args)
+          if can_access?(owner)
+            if method == :[]
+              return m.call(*args) || m.call(args[0].to_sym)
+            else
+              return m.call(*args)
+            end
           end
         rescue NameError
           # It means there is no [] or []=, e.g. undefined
         end
       end
       H8::Undefined
+    end
+
+    def self.can_access?(owner)
+      owner != Object.class && owner != Kernel && owner != BasicObject.class
     end
 
     protected

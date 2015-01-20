@@ -40,10 +40,11 @@ describe 'js_gate' do
     H8::Context.eval('null').should == nil
   end
 
-  it 'should retreive JS fieds as indexes' do
+  it 'should retreive JS fieds as indexes indiffirently' do
     res = H8::Context.eval("({ 'foo': 'bar', 'bar': 122 });")
     res['foo'].to_s.should == 'bar'
     res['bar'].to_i.should == 122
+    res[:foo].should == 'bar'
   end
 
   it 'should retreive JS fields as properties' do

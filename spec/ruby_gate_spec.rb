@@ -19,26 +19,6 @@ describe 'ruby gate' do
     count.should == 1
   end
 
-  # it 'should gate callables in therubyrace mode' do
-  #   cxt      = H8::Context.new
-  #   cxt[:fn] = -> (this, a, b) {
-  #     p this.to_s
-  #     p this.offset
-  #     this.offset + a + b
-  #   }
-  #
-  #   res = cxt.eval <<-End
-  #     function Test() {
-  #       this.offset = 110;
-  #       this.method = function(a,b) {
-  #         return fn(this,a,b);
-  #       }
-  #     }
-  #     new Test().method(11, 22);
-  #   End
-  #   res.to_i.should == 143
-  # end
-
   it 'should allow edit context on yield' do
     cxt      = H8::Context.new
     cxt[:fn] = -> (a, b) {
@@ -336,9 +316,10 @@ describe 'ruby gate' do
 
     it 'should access plain hashes' do
       cxt     = H8::Context.new
-      h       = { 'one' => 2 }
+      h       = { 'one' => 2, :two => 21 }
       cxt[:h] = h
       cxt.eval("h['one']").should == 2
+      cxt.eval("h['two']").should == 21
       eval("h['one']=1;")
       h['one'].should == 1
     end
