@@ -103,20 +103,7 @@ public:
 
 	static void init();
 
-	H8() :
-			self(Qnil) {
-		isolate = Isolate::New();
-		Locker l(isolate);
-		Isolate::Scope isolate_scope(isolate);
-		HandleScope handle_scope(isolate);
-		isolate->SetCaptureStackTraceForUncaughtExceptions(true);
-
-		v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(
-				isolate);
-		v8::Handle<v8::Context> context = v8::Context::New(isolate, NULL,
-				global);
-		persistent_context.Reset(isolate, context);
-	}
+	H8();
 
 	/**
 	 * Evaluate javascript.
@@ -139,6 +126,10 @@ public:
 		return Local<Context>::New(isolate, persistent_context);
 	}
 
+	Handle<FunctionTemplate> getGateFunction() {
+		return Local<FunctionTemplate>::New(isolate, gate_function);
+	}
+
 	bool isError() const {
 		return is_error;
 	}
@@ -146,6 +137,8 @@ public:
 	Isolate* getIsolate() const {
 		return isolate;
 	}
+
+	void gate_class(VALUE name, VALUE proc);
 
 	VALUE to_ruby(Handle<Value> value);
 
@@ -236,6 +229,7 @@ private:
 	VALUE self;
 
 	Persistent<Context> persistent_context;
+	Persistent<FunctionTemplate> gate_function;
 
 	bool is_error = false;
 	bool gvl_released = false;

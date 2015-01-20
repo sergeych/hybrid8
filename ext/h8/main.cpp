@@ -148,6 +148,13 @@ static VALUE context_set_var(VALUE self, VALUE name, VALUE value) {
 	});
 }
 
+static VALUE context_gate_class(VALUE self, VALUE name, VALUE lambda) {
+	return protect_ruby([&] {
+		rc(self)->gate_class(name, lambda);
+		return Qnil;
+	});
+}
+
 static VALUE context_force_gc(VALUE self) {
 	rc(self)->gc();
 	return Qnil;
@@ -190,6 +197,8 @@ void Init_h8(void) {
 	rb_define_alloc_func(context_class, context_alloc);
 	rb_define_method(context_class, "_eval", (ruby_method) context_eval, 3);
 	rb_define_method(context_class, "_set_var", (ruby_method) context_set_var,
+			2);
+	rb_define_method(context_class, "_gate_class", (ruby_method) context_gate_class,
 			2);
 	rb_define_method(context_class, "javascript_gc",
 			(ruby_method) context_force_gc, 0);

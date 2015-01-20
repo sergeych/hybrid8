@@ -18,7 +18,7 @@ namespace h8 {
  */
 class RubyGate: public ObjectWrap, public AllocatedResource {
 public:
-	RubyGate(H8* _context, VALUE object);
+	RubyGate(H8* _context, Handle<Object> instance, VALUE object);
 
 	/**
 	 * Check the handle and unwrap the RubyGate if it is wrapped
@@ -77,7 +77,7 @@ protected:
 	 * extra slots in array if need
 	 */
 	template<class T>
-	VALUE ruby_args(const T& args, unsigned extras = 0) {
+	static VALUE ruby_args(H8* context,const T& args, unsigned extras = 0) {
 		unsigned n = args.Length();
 		VALUE rb_args = rb_ary_new2(n + extras);
 		for (unsigned i = 0; i < n; i++)
@@ -110,6 +110,9 @@ protected:
 	void getIndex(uint32_t index, const PropertyCallbackInfo<Value> &info);
 	void setIndex(uint32_t index, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
+
+	static void GateConstructor(const v8::FunctionCallbackInfo<Value>& args);
+	static void ClassGateConstructor(const v8::FunctionCallbackInfo<Value>& args);
 private:
 
 	void doObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);

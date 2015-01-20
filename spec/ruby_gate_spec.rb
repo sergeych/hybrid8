@@ -5,7 +5,7 @@ describe 'ruby gate' do
 
   it 'should gate callables' do
     cxt      = H8::Context.new
-    count = 0
+    count    = 0
     cxt[:fn] = -> (a, b) {
       count += 1
       a + b
@@ -44,8 +44,8 @@ describe 'ruby gate' do
     cxt[:fn] = -> (a, b) {
       a + b
     }
-    res = cxt.eval("fn(11, 22);") { |cxt|
-      cxt[:fn] = -> (a,b) { a - b }
+    res      = cxt.eval("fn(11, 22);") { |cxt|
+      cxt[:fn] = -> (a, b) { a - b }
     }
     res.to_i.should == -11
   end
@@ -62,7 +62,7 @@ describe 'ruby gate' do
 
   it 'should convert nil, true, false and undefined' do
     cxt      = H8::Context.new
-    value = false
+    value    = false
     cxt[:fn] = -> {
       [nil, true, false, value, H8::Undefined]
     }
@@ -82,9 +82,9 @@ describe 'ruby gate' do
   end
 
   it 'should convert strings to native string' do
-    cxt = H8::Context.new
+    cxt       = H8::Context.new
     cxt[:str] = src = "Пример строки"
-    res = 'ПРИМЕР СТРОКИ'
+    res       = 'ПРИМЕР СТРОКИ'
     cxt.eval('str.toLocaleUpperCase()').should == res
     up = cxt.eval('fn = function(t) { return t.toLocaleUpperCase(); }')
     up.call(src).should == res
@@ -151,6 +151,7 @@ describe 'ruby gate' do
     expect(-> {
       res = cxt.eval <<-End
       result = fn(11, 22);
+      throw Error("It should not happen");
       End
     }).to raise_error(MyException) { |e|
             e.message.should == 'Shit happens'
@@ -174,7 +175,7 @@ describe 'ruby gate' do
       End
       fail 'did not raise error'
     rescue H8::JsError => e
-      x  = e.javascript_error
+      x = e.javascript_error
       e.name.should == 'Error'
       e.message.should =~ /test/
       e.javascript_backtrace.should =~ /at bad \(eval\:4\:17\)/
@@ -251,6 +252,7 @@ describe 'ruby gate' do
       cxt.eval('foo.priv_method').should == H8::Undefined
       cxt.eval('foo.test_args').should be_kind_of(Proc)
       cxt.eval('foo.test_args("hi", "you")').should == 'hi-you'
+      cxt.eval('foo instanceof RubyGate').should == true
     end
 
     it 'should set ruby properties' do
@@ -342,18 +344,31 @@ describe 'ruby gate' do
     end
 
     it 'should pass varargs' do
-      cxt = H8::Context.new
+      cxt        = H8::Context.new
       cxt[:test] = -> (args) {
         # Sample how to deal with javascript 'arguments' vararg object:
         H8::arguments_to_a(args).join(',')
       }
-      res = cxt.eval <<-End
+      res        = cxt.eval <<-End
         function test2() {
           return test(arguments);
         }
         test2(1,2,'ho');
       End
       res.should == '1,2,ho'
+    end
+
+    it 'should gate classes through API' do
+      c = H8::Context.new
+      la = -> (*args) {
+        { 'hello' => 'world'}
+      }
+      c._gate_class 'Tec', la
+      c.eval("var res = new Tec()")
+      c.eval('res').should == { 'hello' => 'world' }
+      c.eval("res['hello']").should == 'world'
+      c.eval('res instanceof Tec').should == true
+      c.eval('res instanceof RubyGate').should == true
     end
 
     it 'should gate classes' do
@@ -363,15 +378,25 @@ describe 'ruby gate' do
         def initialize *args
           @init_args = args
         end
+
+        def inspect
+          "Gated<#{@init_args.inspect}>"
+        end
+
+        def to_str
+          inspect
+        end
       end
 
       cxt = H8::Context.new RClass: Gated
-      c = cxt.eval 'new RClass()'
+      c   = cxt.eval 'new RClass()'
       c.should be_a(Gated)
       c.init_args.should == []
 
       c = cxt.eval 'rc = new RClass("hello", "world")'
       c.should be_a(Gated)
+      cxt.eval('rc instanceof RubyGate').should == true
+      cxt.eval('new RClass() instanceof RClass').should == true
       c.init_args.should == ['hello', 'world']
       cxt.eval('rc.init_args').should == ['hello', 'world']
     end

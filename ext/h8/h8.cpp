@@ -47,6 +47,39 @@ void h8::JsTimeoutError::raise() const {
 	rb_raise(js_timeout_exception, "timeout expired");
 }
 
+h8::H8::H8()
+: self(Qnil)
+{
+	isolate = Isolate::New();
+	Locker l(isolate);
+	Isolate::Scope isolate_scope(isolate);
+	HandleScope handle_scope(isolate);
+	isolate->SetCaptureStackTraceForUncaughtExceptions(true);
+
+	isolate->SetData(0, this);
+
+	v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(
+			isolate);
+
+	// Set up RubyGate in JS context
+	Local<FunctionTemplate> ft = v8::FunctionTemplate::New(isolate,RubyGate::GateConstructor);
+	ft->SetClassName(js("RubyGate"));
+	Local<ObjectTemplate> templ = ft->InstanceTemplate();
+
+	templ->SetInternalFieldCount(2);
+	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
+	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
+	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
+
+	global->Set(isolate, "RubyGate", ft);
+
+	v8::Handle<v8::Context> context = v8::Context::New(isolate, NULL,
+			global);
+	persistent_context.Reset(isolate, context);
+	gate_function.Reset(isolate,ft);
+}
+
+
 Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 	if ( Qtrue == rb_funcall(ruby_value, id_is_a, 1, value_class)) {
 		JsGate *gate;
@@ -59,8 +92,35 @@ Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 	if( ruby_value == Rundefined )
 		return v8::Undefined(isolate);
 	// Generic Ruby object
-	RubyGate *gate = new RubyGate(this, ruby_value);
-	return gate->handle(isolate);
+//	RubyGate *gate = new RubyGate(this, ruby_value);
+//	return gate->handle(isolate);
+	// Generic ruby object - new logic
+	assert( sizeof(VALUE) <= sizeof(void*) );
+	Local<Value> wrapped_ruby_value = External::New(isolate, (void*)ruby_value);
+	return getGateFunction()->GetFunction()->CallAsConstructor(1, &wrapped_ruby_value);
+}
+
+void h8::H8::gate_class(VALUE name,VALUE callable) {
+	Scope scope(this);
+
+	Local<Object> global = getContext()->Global();
+
+	Local<FunctionTemplate> ft = v8::FunctionTemplate::New(isolate,
+			RubyGate::ClassGateConstructor,
+			to_js(callable)
+			);
+	Local<String> class_name = js(name);
+	ft->SetClassName(class_name);
+	ft->Inherit(getGateFunction());
+
+	Local<ObjectTemplate> templ = ft->InstanceTemplate();
+
+	templ->SetInternalFieldCount(2);
+	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
+	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
+	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
+
+	global->Set(class_name, ft->GetFunction());
 }
 
 void h8::H8::ruby_mark_gc() const {
@@ -152,6 +212,7 @@ h8::H8::~H8() {
 			resources.peek_first<AllocatedResource>()->free();
 		}
 		persistent_context.Reset();
+		gate_function.Reset();
 	}
 	isolate->Dispose();
 }

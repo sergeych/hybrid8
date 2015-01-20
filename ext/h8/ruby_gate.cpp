@@ -13,8 +13,7 @@ static void* unblock_caller(void *param) {
 	return NULL;
 }
 
-static void with_gvl(RubyGate *gate, const std::function<void(void)> &block) {
-	H8 *h8 = gate->getH8();
+static void with_gvl(H8 *h8, const std::function<void(void)> &block) {
 	if (h8->isGvlReleased()) {
 		h8->setGvlReleased(false);
 		rb_thread_call_with_gvl(unblock_caller, (void*) &block);
@@ -23,22 +22,65 @@ static void with_gvl(RubyGate *gate, const std::function<void(void)> &block) {
 		block();
 }
 
-h8::RubyGate::RubyGate(H8* _context, VALUE object) :
+static void with_gvl(RubyGate *gate, const std::function<void(void)> &block) {
+	with_gvl(gate->getH8(), block);
+}
+
+void h8::RubyGate::ClassGateConstructor(
+		const v8::FunctionCallbackInfo<Value>& args) {
+	Isolate *isolate = args.GetIsolate();
+	H8* h8 = (H8*) isolate->GetData(0);
+	assert(!args.Data().IsEmpty());
+
+	RubyGate *lambda = RubyGate::unwrap(args.Data().As<Object>());
+	assert(lambda != 0);
+
+	with_gvl(h8, [&] {
+		VALUE rb_args = ruby_args(h8, args, 1);
+		rb_ary_push(rb_args, lambda->ruby_object);
+		// Object creating ruby code can raise exceptions:
+		lambda->rescued_call(
+				rb_args,
+				call,
+				[&] (VALUE res) {
+					new RubyGate(h8, args.This(), res);
+				});
+	});
+	args.GetReturnValue().Set(args.This());
+}
+
+void h8::RubyGate::GateConstructor(
+		const v8::FunctionCallbackInfo<Value>& args) {
+	Isolate *isolate = args.GetIsolate();
+	H8* h8 = (H8*) isolate->GetData(0);
+	assert(args.Length() == 1);
+	Local<Value> val = args[0];
+	VALUE ruby_object = Qnil;
+
+	if (val->IsExternal())
+		ruby_object = (VALUE) val.As<External>()->Value(); // External::Cast(*val)->Value();
+	else {
+		assert(val->IsObject());
+		puts("val is object");
+		RubyGate *rg = RubyGate::unwrap(val.As<Object>());
+		puts("Hurray - unwrap");
+		assert(rg != 0);
+		puts("Hurray - not 0");
+		ruby_object = rg->ruby_object;
+		char* ss = StringValueCStr(ruby_object);
+		rb_warn("Object passed %s\n", ss);
+	}
+
+	new RubyGate(h8, args.This(), ruby_object);
+	args.GetReturnValue().Set(args.This());
+}
+
+h8::RubyGate::RubyGate(H8* _context, Handle<Object> instance, VALUE object) :
 		context(_context), ruby_object(object), next(0), prev(0) {
 	v8::HandleScope scope(context->getIsolate());
-//        	printf("Ruby object gate constructor\n");
 	context->add_resource(this);
-
-	v8::Local<v8::ObjectTemplate> templ = ObjectTemplate::New();
-	templ->SetInternalFieldCount(2);
-	templ->SetCallAsFunctionHandler(&ObjectCallback);
-
-	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
-	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
-
-	v8::Handle<v8::Object> handle = templ->NewInstance();
-	handle->SetAlignedPointerInInternalField(1, RUBYGATE_ID);
-	Wrap(handle);
+	instance->SetAlignedPointerInInternalField(1, RUBYGATE_ID);
+	Wrap(instance);
 }
 
 void h8::RubyGate::mapGet(Local<String> name,
@@ -118,26 +160,25 @@ void h8::RubyGate::rescued_call(VALUE rb_args, VALUE (*call)(VALUE),
 		// exceptions...
 		try {
 			block(res);
-		}
-		catch(JsError& e) {
+		} catch (JsError& e) {
 			Local<v8::Object> error = v8::Exception::Error(
 					context->js(e.what())).As<v8::Object>();
 			context->getIsolate()->ThrowException(error);
-		}
-		catch(...) {
-			Local<v8::Object> error = v8::Exception::Error(
-					context->js("unknown exception (inner bug)")).As<v8::Object>();
+		} catch (...) {
+			Local<v8::Object> error =
+					v8::Exception::Error(
+							context->js("unknown exception (inner bug)")).As<
+							v8::Object>();
 			context->getIsolate()->ThrowException(error);
 		}
-	}
-	else
+	} else
 		throw_js();
 }
 
 void h8::RubyGate::doObjectCallback(
 		const v8::FunctionCallbackInfo<v8::Value>& args) {
 	with_gvl(this, [&] {
-		VALUE rb_args = ruby_args(args, 1);
+		VALUE rb_args = ruby_args(context, args, 1);
 		rb_ary_push(rb_args, ruby_object);
 		rescued_call(rb_args, call, [&] (VALUE res) {
 					args.GetReturnValue().Set(context->to_js(res));

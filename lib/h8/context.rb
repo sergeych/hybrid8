@@ -7,7 +7,7 @@ module H8
       @idcount = 0
       set_all **kwargs
       _set_var '___create_ruby_class', -> (cls, args) {
-        _do_cretate_ruby_class cls, args
+        _do_create_ruby_class cls, args
       }
     end
 
@@ -102,13 +102,7 @@ module H8
     # in which case constructor function will be created
     def set_var name, value
       if value.is_a?(Class)
-        clsid = "__ruby_class_#{@idcount += 1}"
-        _set_var clsid, value
-        eval <<-End
-          function #{name.to_s}() {
-            return ___create_ruby_class(#{clsid}, arguments);
-          }
-        End
+        _gate_class name.to_s, -> (*args) { value.new *args }
       else
         _set_var name, value
       end
@@ -116,7 +110,7 @@ module H8
 
     # create class instance passing it arguments stored in javascript 'arguments' object
     # (so it repacks them first)
-    def _do_cretate_ruby_class(klass, arguments)
+    def _do_create_ruby_class(klass, arguments)
       klass.new *H8::arguments_to_a(arguments.to_ruby.values)
     end
   end
