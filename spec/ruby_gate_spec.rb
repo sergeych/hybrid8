@@ -217,6 +217,7 @@ describe 'ruby gate' do
 
     it 'should access object properties and methods' do
       cxt       = H8::Context.new
+      cxt.eval('RubyGate.prototype.test2 = function() { return "ttt"; }; null;');
       cxt[:foo] = Test.new
       cxt.eval('foo.ro').should == 'readonly'
       cxt.eval('foo.rw').should == 'not initialized'
@@ -381,6 +382,26 @@ describe 'ruby gate' do
       c.init_args.should == ['hello', 'world']
       cxt.eval('rc.init_args').should == ['hello', 'world']
     end
+
+    it 'should expendable gate classes' do
+      class Gated
+        attr :init_args
+
+        def initialize *args
+          @init_args = args
+        end
+
+        def to_str
+          inspect
+        end
+      end
+
+      cxt = H8::Context.new RClass: Gated
+      expect(-> { cxt.eval 'new RClass().mm(1)' }).to raise_error(H8::JsError)
+      cxt.eval('RClass.prototype.mm = function(a) { return "bar" + a; };')
+      cxt.eval('var x = new RClass(11); x.mm("hi!");').should == 'barhi!';
+    end
+
   end
 
   it 'should survive recursive constructions' do

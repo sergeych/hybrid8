@@ -126,8 +126,12 @@ public:
 		return Local<Context>::New(isolate, persistent_context);
 	}
 
-	Handle<FunctionTemplate> getGateFunction() {
-		return Local<FunctionTemplate>::New(isolate, gate_function);
+	Handle<FunctionTemplate> getGateFunctionTemplate() {
+		return Local<FunctionTemplate>::New(isolate, gate_function_template);
+	}
+
+	Handle<Function> getGateFunction() {
+		return Local<Function>::New(isolate, gate_function);
 	}
 
 	bool isError() const {
@@ -229,7 +233,8 @@ private:
 	VALUE self;
 
 	Persistent<Context> persistent_context;
-	Persistent<FunctionTemplate> gate_function;
+	Persistent<FunctionTemplate> gate_function_template;
+	Persistent<Function> gate_function;
 
 	bool is_error = false;
 	bool gvl_released = false;

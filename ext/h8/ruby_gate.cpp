@@ -39,13 +39,13 @@ void h8::RubyGate::ClassGateConstructor(
 		VALUE rb_args = ruby_args(h8, args, 1);
 		rb_ary_push(rb_args, lambda->ruby_object);
 		// Object creating ruby code can raise exceptions:
-		lambda->rescued_call(
-				rb_args,
-				call,
-				[&] (VALUE res) {
-					new RubyGate(h8, args.This(), res);
-				});
-	});
+			lambda->rescued_call(
+					rb_args,
+					call,
+					[&] (VALUE res) {
+						new RubyGate(h8, args.This(), res);
+					});
+		});
 	args.GetReturnValue().Set(args.This());
 }
 
@@ -85,9 +85,14 @@ h8::RubyGate::RubyGate(H8* _context, Handle<Object> instance, VALUE object) :
 
 void h8::RubyGate::mapGet(Local<String> name,
 		const PropertyCallbackInfo<Value> &info) {
-	RubyGate *rg = RubyGate::unwrap(info.This());
-	assert(rg != 0);
-	rg->getProperty(name, info);
+	Local<Value> loc = info.This()->GetRealNamedPropertyInPrototypeChain(name);
+	if (!loc.IsEmpty())
+		info.GetReturnValue().Set(loc);
+	else {
+		RubyGate *rg = RubyGate::unwrap(info.This());
+		assert(rg != 0);
+		rg->getProperty(name, info);
+	}
 }
 
 void h8::RubyGate::mapSet(Local<String> name, Local<Value> value,

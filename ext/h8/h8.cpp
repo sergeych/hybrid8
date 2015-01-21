@@ -71,12 +71,18 @@ h8::H8::H8()
 	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
 	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
 
-	global->Set(isolate, "RubyGate", ft);
-
 	v8::Handle<v8::Context> context = v8::Context::New(isolate, NULL,
 			global);
+
+	v8::Context::Scope cs(context);
+
+	Local<Function> fn = ft->GetFunction();
+
+	context->Global()->Set(js("RubyGate"), fn);
+
 	persistent_context.Reset(isolate, context);
-	gate_function.Reset(isolate,ft);
+	gate_function_template.Reset(isolate,ft);
+	gate_function.Reset(isolate,fn);
 }
 
 
@@ -91,13 +97,10 @@ Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 	}
 	if( ruby_value == Rundefined )
 		return v8::Undefined(isolate);
-	// Generic Ruby object
-//	RubyGate *gate = new RubyGate(this, ruby_value);
-//	return gate->handle(isolate);
 	// Generic ruby object - new logic
 	assert( sizeof(VALUE) <= sizeof(void*) );
 	Local<Value> wrapped_ruby_value = External::New(isolate, (void*)ruby_value);
-	return getGateFunction()->GetFunction()->CallAsConstructor(1, &wrapped_ruby_value);
+	return getGateFunction()->CallAsConstructor(1, &wrapped_ruby_value);
 }
 
 void h8::H8::gate_class(VALUE name,VALUE callable) {
@@ -111,7 +114,7 @@ void h8::H8::gate_class(VALUE name,VALUE callable) {
 			);
 	Local<String> class_name = js(name);
 	ft->SetClassName(class_name);
-	ft->Inherit(getGateFunction());
+	ft->Inherit(getGateFunctionTemplate());
 
 	Local<ObjectTemplate> templ = ft->InstanceTemplate();
 
@@ -213,6 +216,7 @@ h8::H8::~H8() {
 		}
 		persistent_context.Reset();
 		gate_function.Reset();
+		gate_function_template.Reset();
 	}
 	isolate->Dispose();
 }
