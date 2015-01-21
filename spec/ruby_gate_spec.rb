@@ -368,6 +368,10 @@ describe 'ruby gate' do
         self
       end
 
+      def checkself2 *args
+        self
+      end
+
       def to_str
         inspect
       end
@@ -387,6 +391,13 @@ describe 'ruby gate' do
       cxt.eval('rc.init_args').should == ['hello', 'world']
     end
 
+    it 'should not die on calling wrong arity' do
+      # TODO: Fix!
+      # cxt = H8::Context.new RClass: Gated
+      # g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
+      # expect(-> {cxt.eval('g1.checkself(12)')}).to raise_error
+    end
+
     it 'should return self from gated class' do
       cxt = H8::Context.new RClass: Gated
       g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
@@ -398,21 +409,13 @@ describe 'ruby gate' do
       # p cxt.eval('g1.checkself.toString()')
       cxt.eval('g1.checkself instanceof RClass').should == true
       cxt.eval('g1.checkself === g1').should == true
+
+      # This checks how id map works (lite check)
+      cxt.eval('g1.checkself2(1) instanceof RClass').should == true
+      cxt.eval('g1.checkself2(2) === g1').should == true
     end
 
     it 'should expendable gate classes' do
-      class Gated
-        attr :init_args
-
-        def initialize *args
-          @init_args = args
-        end
-
-        def to_str
-          inspect
-        end
-      end
-
       cxt = H8::Context.new RClass: Gated
       expect(-> { cxt.eval 'new RClass().mm(1)' }).to raise_error(H8::JsError)
       cxt.eval('RClass.prototype.mm = function(a) { return "bar" + a; };')

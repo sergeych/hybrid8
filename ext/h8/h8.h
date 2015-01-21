@@ -5,6 +5,8 @@
 #include <ruby.h>
 #include <iostream>
 #include <exception>
+#include <map>
+
 #include "allocated_resource.h"
 #include "js_catcher.h"
 
@@ -223,6 +225,10 @@ public:
 		return rb_interrupted;
 	}
 
+	void register_ruby_gate(RubyGate* gate);
+	void unregister_ruby_gate(RubyGate* gate);
+	RubyGate *find_gate(VALUE rb_object);
+
 	virtual ~H8();
 
 private:
@@ -241,6 +247,7 @@ private:
 	bool rb_interrupted = false;
 
 	chain resources;
+	std::map<VALUE,RubyGate*> id_map;
 };
 // Context
 }

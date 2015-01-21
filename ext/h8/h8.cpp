@@ -99,6 +99,11 @@ Local<Value> h8::H8::gateObject(VALUE ruby_value) {
 		return v8::Undefined(isolate);
 	// Generic ruby object - new logic
 	assert( sizeof(VALUE) <= sizeof(void*) );
+
+	RubyGate *gate = find_gate(ruby_value);
+	if( gate )
+		return gate->handle();
+
 	Local<Value> wrapped_ruby_value = External::New(isolate, (void*)ruby_value);
 	return getGateFunction()->CallAsConstructor(1, &wrapped_ruby_value);
 }
@@ -166,6 +171,23 @@ void h8::H8::invoke(v8::Handle<v8::Script> script, Local<Value>& result) {
 	gvl_released = false;
 	result = script->Run();
 #endif
+}
+
+void h8::H8::register_ruby_gate(RubyGate* gate) {
+	add_resource(gate);
+	id_map.insert(std::pair<VALUE,RubyGate*>(gate->ruby_object, gate));
+}
+
+void h8::H8::unregister_ruby_gate(RubyGate* gate) {
+	add_resource(gate);
+	id_map.erase(gate->ruby_object);
+}
+
+h8::RubyGate* h8::H8::find_gate(VALUE rb_object) {
+	auto it = id_map.find(rb_object);
+	if( it == id_map.end() )
+		return 0;
+	return it->second;
 }
 
 v8::Handle<v8::Value> h8::H8::eval(const char* script_utf, unsigned max_ms,const char* source_name) {

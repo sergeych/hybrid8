@@ -72,9 +72,10 @@ module H8
         if can_access?(owner)
           return m.call(*args) if method[0] == '[' || method[-1] == '='
           if m.arity != 0
+            # The pity thing - we return callable at thos point
             return -> (*args) { m.call *args }
           else
-            return m.call *args
+            return m.call
           end
         end
       rescue NameError

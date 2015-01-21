@@ -57,19 +57,8 @@ void h8::RubyGate::GateConstructor(
 	Local<Value> val = args[0];
 	VALUE ruby_object = Qnil;
 
-	if (val->IsExternal())
-		ruby_object = (VALUE) val.As<External>()->Value(); // External::Cast(*val)->Value();
-	else {
-		assert(val->IsObject());
-		puts("val is object");
-		RubyGate *rg = RubyGate::unwrap(val.As<Object>());
-		puts("Hurray - unwrap");
-		assert(rg != 0);
-		puts("Hurray - not 0");
-		ruby_object = rg->ruby_object;
-		char* ss = StringValueCStr(ruby_object);
-		rb_warn("Object passed %s\n", ss);
-	}
+	assert(val->IsExternal());
+	ruby_object = (VALUE) val.As<External>()->Value(); // External::Cast(*val)->Value();
 
 	new RubyGate(h8, args.This(), ruby_object);
 	args.GetReturnValue().Set(args.This());
@@ -78,7 +67,7 @@ void h8::RubyGate::GateConstructor(
 h8::RubyGate::RubyGate(H8* _context, Handle<Object> instance, VALUE object) :
 		context(_context), ruby_object(object), next(0), prev(0) {
 	v8::HandleScope scope(context->getIsolate());
-	context->add_resource(this);
+	context->register_ruby_gate(this);
 	instance->SetAlignedPointerInInternalField(1, RUBYGATE_ID);
 	Wrap(instance);
 }

@@ -51,6 +51,7 @@ public:
 
 	virtual ~RubyGate() {
 //		puts("~RG()");
+		context->unregister_ruby_gate(this);
 		persistent().ClearWeak();
 		persistent().Reset();
 		// The rest is done by the base classes
