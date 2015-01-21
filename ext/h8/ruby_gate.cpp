@@ -186,9 +186,12 @@ void h8::RubyGate::doObjectCallback(
 		VALUE rb_args = ruby_args(context, args, 1);
 		rb_ary_push(rb_args, ruby_object);
 		rescued_call(rb_args, call, [&] (VALUE res) {
-					args.GetReturnValue().Set(context->to_js(res));
-				});
-	});
+			if( res == ruby_object )
+				args.GetReturnValue().Set(args.This());
+			else
+				args.GetReturnValue().Set(context->to_js(res));
+		});
+});
 }
 
 void h8::RubyGate::getProperty(Local<String> name,
@@ -198,6 +201,9 @@ void h8::RubyGate::getProperty(Local<String> name,
 		rb_ary_push(rb_args, ruby_object);
 		rb_ary_push(rb_args, context->to_ruby(name));
 		rescued_call(rb_args, secure_call, [&] (VALUE res) {
+				if( res == ruby_object )
+					info.GetReturnValue().Set(info.This());
+				else
 					info.GetReturnValue().Set(context->to_js(res));
 				});
 	});

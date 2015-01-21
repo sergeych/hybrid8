@@ -353,23 +353,27 @@ describe 'ruby gate' do
       c.eval('res instanceof RubyGate').should == true
     end
 
-    it 'should gate classes' do
-      class Gated
-        attr :init_args
+    class Gated
+      attr :init_args
 
-        def initialize *args
-          @init_args = args
-        end
-
-        def inspect
-          "Gated<#{@init_args.inspect}>"
-        end
-
-        def to_str
-          inspect
-        end
+      def initialize *args
+        @init_args = args
       end
 
+      def inspect
+        "Gated<#{@init_args.inspect}>"
+      end
+
+      def checkself
+        self
+      end
+
+      def to_str
+        inspect
+      end
+    end
+
+    it 'should gate classes' do
       cxt = H8::Context.new RClass: Gated
       c   = cxt.eval 'new RClass()'
       c.should be_a(Gated)
@@ -381,6 +385,19 @@ describe 'ruby gate' do
       cxt.eval('new RClass() instanceof RClass').should == true
       c.init_args.should == ['hello', 'world']
       cxt.eval('rc.init_args').should == ['hello', 'world']
+    end
+
+    it 'should return self from gated class' do
+      cxt = H8::Context.new RClass: Gated
+      g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
+      g1.should be_a(Gated)
+      g2 = cxt.eval 'g1.checkself'
+      g2.should be_a(Gated)
+      g1.equal?(g2).should == true
+      cxt.eval('g1 instanceof RClass').should == true
+      # p cxt.eval('g1.checkself.toString()')
+      cxt.eval('g1.checkself instanceof RClass').should == true
+      cxt.eval('g1.checkself === g1').should == true
     end
 
     it 'should expendable gate classes' do
