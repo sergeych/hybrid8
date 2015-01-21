@@ -94,12 +94,18 @@ describe 'coffeescript' do
       c[:r3] = -> (*args) {
         @last_args = args
       }
+      c[:r4] = -> (first, second=0) {
+        [first+100, second]
+      }
       script = <<-End
         @r1 = (args...) ->
           r3 'done', args[0..-2]...
+        @r2 = (args...) ->
+          r4 args...
       End
       c.coffee script
       c.eval('r1( "now", 1, 2, 4);').should == ['done', 'now', 1, 2]
+      c.eval('r2( 100, 200);').should == [200, 200]
     end
   end
 end

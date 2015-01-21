@@ -75,7 +75,7 @@ module H8
         if can_access?(owner)
           return m.call(*args) if method[0] == '[' || method[-1] == '='
           if m.arity != 0
-            return -> (*args) { m.call *args }
+            return ProcGate.new( -> (*args) { m.call *args } )
           else
             return m.call
           end

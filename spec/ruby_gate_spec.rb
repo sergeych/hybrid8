@@ -372,6 +372,10 @@ describe 'ruby gate' do
         self
       end
 
+      def testm a1, a2='???'
+        "#{a1} - #{a2}"
+      end
+
       def to_str
         inspect
       end
@@ -389,6 +393,12 @@ describe 'ruby gate' do
       cxt.eval('new RClass() instanceof RClass').should == true
       c.init_args.should == ['hello', 'world']
       cxt.eval('rc.init_args').should == ['hello', 'world']
+    end
+
+    it 'should provide apply to gated class and instance' do
+      c = H8::Context.new RClass: Gated
+      c.eval('new RClass().testm(1,"d");').should == '1 - d'
+      c.eval('new RClass().testm.apply( null, [1,"n"]);').should == '1 - n'
     end
 
     it 'should not die on calling wrong arity' do
