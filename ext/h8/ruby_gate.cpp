@@ -36,7 +36,8 @@ void h8::RubyGate::ClassGateConstructor(
 	assert(lambda != 0);
 
 	with_gvl(h8, [&] {
-		VALUE rb_args = ruby_args(h8, args, 1);
+		VALUE rb_args = ruby_args(h8, args, 2);
+		rb_ary_push(rb_args, h8->ruby_context());
 		rb_ary_push(rb_args, lambda->ruby_object);
 		// Object creating ruby code can raise exceptions:
 			lambda->rescued_call(
@@ -122,7 +123,9 @@ VALUE h8::RubyGate::rescue_callback(VALUE me, VALUE exception_object) {
 
 VALUE RubyGate::call(VALUE args) {
 	VALUE callable = rb_ary_pop(args);
-	return rb_proc_call(callable, args);
+	VALUE context = rb_ary_pop(args);
+	VALUE res = rb_funcall(context, rb_intern("safe_proc_call"), 2, callable, args);
+	return res;
 }
 
 VALUE RubyGate::secure_call(VALUE args) {
@@ -165,14 +168,16 @@ void h8::RubyGate::rescued_call(VALUE rb_args, VALUE (*call)(VALUE),
 							v8::Object>();
 			context->getIsolate()->ThrowException(error);
 		}
-	} else
+	} else {
 		throw_js();
+	}
 }
 
 void h8::RubyGate::doObjectCallback(
 		const v8::FunctionCallbackInfo<v8::Value>& args) {
 	with_gvl(this, [&] {
 		VALUE rb_args = ruby_args(context, args, 1);
+		rb_ary_push(rb_args, context->ruby_context());
 		rb_ary_push(rb_args, ruby_object);
 		rescued_call(rb_args, call, [&] (VALUE res) {
 			if( res == ruby_object )

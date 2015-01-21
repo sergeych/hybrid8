@@ -72,7 +72,6 @@ module H8
         if can_access?(owner)
           return m.call(*args) if method[0] == '[' || method[-1] == '='
           if m.arity != 0
-            # The pity thing - we return callable at thos point
             return -> (*args) { m.call *args }
           else
             return m.call
@@ -99,6 +98,12 @@ module H8
         end
       end
       H8::Undefined
+    end
+
+    # This is workaround for buggy rb_proc_call which produces segfaults
+    # if proc is not exactly a proc, so we call it like this:
+    def safe_proc_call proc, args
+      proc.call *args
     end
 
     def self.can_access?(owner)

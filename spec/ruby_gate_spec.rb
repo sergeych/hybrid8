@@ -392,10 +392,12 @@ describe 'ruby gate' do
     end
 
     it 'should not die on calling wrong arity' do
-      # TODO: Fix!
-      # cxt = H8::Context.new RClass: Gated
-      # g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
-      # expect(-> {cxt.eval('g1.checkself(12)')}).to raise_error
+      cxt = H8::Context.new RClass: Gated
+      g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
+
+      # We call gated ruby object with wrong number of args
+      # which in turn causes attempt to call not callable result:
+      expect(-> {cxt.eval('g1.checkself(12)')}).to raise_error(NoMethodError)
     end
 
     it 'should return self from gated class' do
