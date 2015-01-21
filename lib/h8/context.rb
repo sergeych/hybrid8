@@ -1,14 +1,17 @@
 require 'thread'
+require 'h8'
 
 module H8
+
   class Context
     # Create new context optionally providing variables hash
-    def initialize **kwargs
+    def initialize noglobals: false, **kwargs
       @idcount = 0
       set_all **kwargs
       _set_var '___create_ruby_class', -> (cls, args) {
         _do_create_ruby_class cls, args
       }
+      # noglobals or execute_script 'globals.coffee'
     end
 
     # set variables from keyword arguments to this context
@@ -48,13 +51,13 @@ module H8
     # If you need to execute same script more than once consider first H8::Coffee.compile
     # and cache compiled script.
     def coffee script, ** kwargs
-      eval Coffee.compile script, **kwargs
+      eval Coffee.compile script, ** kwargs
     end
 
 
     # Execute script in a new context with optionally set vars. @see H8#set_all
     # @return [Value] wrapped object returned by the script
-    def self.eval script, file_name: nil, **kwargs
+    def self.eval script, file_name: nil, ** kwargs
       Context.new(** kwargs).eval script, file_name: file_name
     end
 
@@ -67,7 +70,7 @@ module H8
     def self.secure_call instance, method, args=nil
       method = method.to_sym
       begin
-        m = instance.public_method(method)
+        m     = instance.public_method(method)
         owner = m.owner
         if can_access?(owner)
           return m.call(*args) if method[0] == '[' || method[-1] == '='
@@ -80,7 +83,7 @@ module H8
       rescue NameError
         # No exact method, calling []/[]= if any
         method, args = if method[-1] == '='
-                         [:[]=, [method[0..-2].to_s, args[0]] ]
+                         [:[]=, [method[0..-2].to_s, args[0]]]
                        else
                          [:[], [method.to_s]]
                        end
@@ -88,7 +91,11 @@ module H8
           m = instance.public_method(method)
           if can_access?(owner)
             if method == :[]
-              return m.call(*args) || m.call(args[0].to_sym)
+              if instance.is_a?(Hash)
+                return m.call(*args) || m.call(args[0].to_sym)
+              else
+                return m.call(*args)
+              end
             else
               return m.call(*args)
             end
@@ -115,10 +122,13 @@ module H8
     # Set var that could be either a callable, class instance, simple value or a Class class
     # in which case constructor function will be created
     def set_var name, value
-      if value.is_a?(Class)
-        _gate_class name.to_s, -> (*args) { value.new *args }
-      else
-        _set_var name, value
+      case value
+        when Class
+          _gate_class name.to_s, -> (*args) { value.new *args }
+        when Proc
+          _set_var name, ProcGate.new(value)
+        else
+          _set_var name, value
       end
     end
 
@@ -126,6 +136,36 @@ module H8
     # (so it repacks them first)
     def _do_create_ruby_class(klass, arguments)
       klass.new *H8::arguments_to_a(arguments.to_ruby.values)
+    end
+
+
+    @@base  = File.expand_path File.join(File.dirname(__FILE__), '../scripts')
+    @@cache = {}
+
+    def execute_script name
+      p [:exs, name]
+      script = @@cache[name] ||= begin
+        p 'cache miss'
+        script = open(File.join(@@base, name), 'r').read
+        name.downcase.end_with?('.coffee') ? H8::Coffee.compile(script) : script
+      end
+      eval script
+    end
+
+  end
+
+  # The gate for Ruby's callable to support javascript's 'apply' functionality
+  class ProcGate
+    def initialize callable
+      @callable = callable
+    end
+
+    def apply this, args
+      @callable.call *args
+    end
+
+    def call *args
+      @callable.call *args
     end
   end
 

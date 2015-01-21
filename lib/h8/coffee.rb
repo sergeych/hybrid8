@@ -18,7 +18,7 @@ module H8
     # compiler instance across all threads with a mutex.
     def self.eval src, ** kwargs
       @@mutex.synchronize {
-        (@@compiler ||= Coffee.new).eval src, ** kwargs
+        (@@compiler ||= Coffee.new).eval src, **kwargs
       }
     end
 
@@ -29,13 +29,13 @@ module H8
     # compiler instance across all threads with a mutex.
     def self.compile src, ** kwargs
       @@mutex.synchronize {
-        (@@compiler ||= Coffee.new).compile src, ** kwargs
+        (@@compiler ||= Coffee.new).compile src, **kwargs
       }
     end
 
     # Create compiler instance.
     def initialize
-      @context = H8::Context.new
+      @context = H8::Context.new noglobals: true
       @context.eval read_script 'coffee-script.js'
       eval read_script('globals.coffee')
     end
@@ -69,6 +69,5 @@ module H8
       @@cache[name] ||= open(File.join(@@base, name), 'r').read
     end
   end
-
 
 end
