@@ -206,7 +206,7 @@ end
 
 class Array
   # @return new array with all components converted to_ruby
-  def to_ruby depth
+  def to_ruby depth=0
     depth += 1
     map { |x| x.to_ruby depth }
   end
