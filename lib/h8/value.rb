@@ -192,10 +192,14 @@ end
 class Hash
   # Hash copies in depth converting its data. Primary usage
   # is when it was used bu javascript and could contain gated objects.
+  #
+  # Important! that converted keys are turned to string even of were
+  # pure ruby symbols. This is done to remove ambiguity: work the same
+  # with ruby hashes, javasctipt objects, OpenStruct and Hashie::Mash instances
   def to_ruby depth=0
     res = {}
     depth += 1
-    each { |k,v| res[k.to_ruby depth] = v.to_ruby depth }
+    each { |k,v| res[k.to_ruby(depth).to_s] = v.to_ruby depth }
     res
   end
 end

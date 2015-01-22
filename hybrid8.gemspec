@@ -33,6 +33,7 @@ spec = Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "rspec", '~> 3.1'
+  spec.add_development_dependency 'hashie', '>= 0.1.2'
 
   spec.add_dependency 'pargser', '>= 0.1.2'
 end

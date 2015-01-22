@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'h8'
 require 'ostruct'
+require 'hashie'
 
 describe 'ruby gate' do
 
@@ -217,7 +218,7 @@ describe 'ruby gate' do
     end
 
     it 'should access object properties and methods' do
-      cxt       = H8::Context.new
+      cxt = H8::Context.new
       cxt.eval('RubyGate.prototype.test2 = function() { return "ttt"; }; null;');
       cxt[:foo] = Test.new
       cxt.eval('foo.ro').should == 'readonly'
@@ -287,7 +288,6 @@ describe 'ruby gate' do
     end
 
     it 'should add and intercept property access' do
-      # pending
       t          = Test.new
       t.do_throw = true
       cxt        = H8::Context.new t: t
@@ -302,22 +302,23 @@ describe 'ruby gate' do
     end
 
     it 'should allow adding data to ruby hash' do
-      s = OpenStruct.new
-      s.test = 'foo'
-      c = H8::Context.new
-      c[:data] = s
-      c[:assert] = -> (cond) { !cond and raise "assertion failed" }
-      c.coffee 'assert data.test == "foo"'
-      c.coffee 'data.test = "bar"; assert data.test == "bar"'
-      s.test.should == 'bar'
-      c.coffee 'data.foo = "baz"'
-      s.foo.should == 'baz'
-      c.coffee 'data.h = { foo: "bar", bar: { baz: 1 } }'
-      s.h.foo.should == 'bar'
-      c.coffee 'data.h.bar.baz == 1'
-      s.h.bar.baz.should == 1
-      c.coffee 'data.h.bar.arr = ["hello", { one: 2 }]'
-      s.to_ruby.should == { :test => "bar", :foo => "baz", :h => { "foo" => "bar", "bar" => { "baz" => 1, "arr" => ["hello", { "one" => 2 }] } } }
+      [OpenStruct.new, Hashie::Mash.new].each { |s|
+        s.test     = 'foo'
+        c          = H8::Context.new
+        c[:data]   = s
+        c[:assert] = -> (cond) { !cond and raise "assertion failed" }
+        c.coffee 'assert data.test == "foo"'
+        c.coffee 'data.test = "bar"; assert data.test == "bar"'
+        s.test.should == 'bar'
+        c.coffee 'data.foo = "baz"'
+        s.foo.should == 'baz'
+        c.coffee 'data.h = { foo: "bar", bar: { baz: 1 } }'
+        s.h.foo.should == 'bar'
+        c.coffee 'data.h.bar.baz == 1'
+        s.h.bar.baz.should == 1
+        c.coffee 'data.h.bar.arr = ["hello", { one: 2 }]'
+        s.to_ruby.should == { 'test' => "bar", 'foo' => "baz", 'h' => { "foo" => "bar", "bar" => { "baz" => 1, "arr" => ["hello", { "one" => 2 }] } } }
+      }
     end
 
     it 'should access plain arrays (provide numeric indexes)' do
@@ -356,9 +357,9 @@ describe 'ruby gate' do
     end
 
     it 'should gate classes through API' do
-      c = H8::Context.new
+      c  = H8::Context.new
       la = -> (*args) {
-        { 'hello' => 'world'}
+        { 'hello' => 'world' }
       }
       c._gate_class 'Tec', la
       c.eval("var res = new Tec()")
@@ -418,16 +419,16 @@ describe 'ruby gate' do
 
     it 'should not die on calling wrong arity' do
       cxt = H8::Context.new RClass: Gated
-      g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
+      g1  = cxt.eval 'var g1 = new RClass(1,2.3); g1'
 
       # We call gated ruby object with wrong number of args
       # which in turn causes attempt to call not callable result:
-      expect(-> {cxt.eval('g1.checkself(12)')}).to raise_error(NoMethodError)
+      expect(-> { cxt.eval('g1.checkself(12)') }).to raise_error(NoMethodError)
     end
 
     it 'should return self from gated class' do
       cxt = H8::Context.new RClass: Gated
-      g1 = cxt.eval 'var g1 = new RClass(1,2.3); g1'
+      g1  = cxt.eval 'var g1 = new RClass(1,2.3); g1'
       g1.should be_a(Gated)
       g2 = cxt.eval 'g1.checkself'
       g2.should be_a(Gated)
