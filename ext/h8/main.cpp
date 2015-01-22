@@ -14,8 +14,7 @@ VALUE ruby_gate_class;
 VALUE value_class;
 VALUE Rundefined;
 
-ID id_is_a;
-ID id_safe_call;
+ID id_is_a, id_safe_call, id_safe_proc_call;
 
 VALUE protect_ruby(const std::function<VALUE()> &block) {
 	try {
@@ -189,6 +188,7 @@ void Init_h8(void) {
 
 	id_is_a = rb_intern("is_a?");
 	id_safe_call = rb_intern("secure_call");
+	id_safe_proc_call = rb_intern("safe_proc_call");
 
 	VALUE h8 = rb_define_module("H8");
 

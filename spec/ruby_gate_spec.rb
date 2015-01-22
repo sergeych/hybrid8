@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'h8'
+require 'ostruct'
 
 describe 'ruby gate' do
 
@@ -173,7 +174,7 @@ describe 'ruby gate' do
     end
 
     class Test < Base
-      attr :ro
+      attr :ro, :val
       attr_accessor :rw
 
       def initialize
@@ -231,17 +232,9 @@ describe 'ruby gate' do
       cxt.eval('foo.object_id').should == H8::Undefined
       cxt.eval('foo.prot_method').should == H8::Undefined
       cxt.eval('foo.priv_method').should == H8::Undefined
-      cxt.eval('foo.test_args').should be_kind_of(Proc)
+      cxt.eval('foo.test_args').should be_kind_of(H8::ProcGate)
       cxt.eval('foo.test_args("hi", "you")').should == 'hi-you'
       cxt.eval('foo instanceof RubyGate').should == true
-    end
-
-    it 'should set ruby properties' do
-      cxt       = H8::Context.new
-      cxt[:foo] = t = Test.new
-      cxt.eval('foo.rw="hello";')
-      t.rw.should == 'hello'
-      cxt.eval('foo.rw').should == 'hello'
     end
 
     context 'do interceptors' do
@@ -280,7 +273,7 @@ describe 'ruby gate' do
         cxt.eval('foo.send').should == H8::Undefined
         cxt.eval('foo.prot_method').should == H8::Undefined
         cxt.eval('foo.priv_method').should == H8::Undefined
-        cxt.eval('foo.test_args').should be_kind_of(Proc)
+        cxt.eval('foo.test_args').should be_kind_of(H8::ProcGate)
         cxt.eval('foo.test_args("hi", "you")').should == 'hi-you'
       end
 
@@ -298,11 +291,33 @@ describe 'ruby gate' do
       t          = Test.new
       t.do_throw = true
       cxt        = H8::Context.new t: t
+
+      # see Test class implementation: this is a valid test
       cxt.eval("t['foo'];").should == 'init[]'
+      cxt.eval("t.foo").should == 'init[]'
       expect(-> { cxt.eval("t['foo1'];") }).to raise_error(RuntimeError)
-      cxt.eval("t['foo']='bar'");
-      # p t['foo']
-      # p cxt.eval "t['foo'] = 'bar';"
+      cxt.eval("t.foo='bar'");
+      cxt.eval("t.foo;").should == 'bar'
+      t.val.should == 'bar'
+    end
+
+    it 'should allow adding data to ruby hash' do
+      s = OpenStruct.new
+      s.test = 'foo'
+      c = H8::Context.new
+      c[:data] = s
+      c[:assert] = -> (cond) { !cond and raise "assertion failed" }
+      c.coffee 'assert data.test == "foo"'
+      c.coffee 'data.test = "bar"; assert data.test == "bar"'
+      s.test.should == 'bar'
+      c.coffee 'data.foo = "baz"'
+      s.foo.should == 'baz'
+      c.coffee 'data.h = { foo: "bar", bar: { baz: 1 } }'
+      s.h.foo.should == 'bar'
+      c.coffee 'data.h.bar.baz == 1'
+      s.h.bar.baz.should == 1
+      c.coffee 'data.h.bar.arr = ["hello", { one: 2 }]'
+      s.to_ruby.should == { :test => "bar", :foo => "baz", :h => { "foo" => "bar", "bar" => { "baz" => 1, "arr" => ["hello", { "one" => 2 }] } } }
     end
 
     it 'should access plain arrays (provide numeric indexes)' do

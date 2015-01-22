@@ -19,8 +19,7 @@ extern VALUE value_class;
 extern VALUE ruby_gate_class;
 extern VALUE Rundefined;
 
-extern ID id_is_a;
-extern ID id_safe_call;
+extern ID id_is_a, id_safe_call, id_safe_proc_call;
 
 VALUE protect_ruby(const std::function<VALUE()> &block);
 

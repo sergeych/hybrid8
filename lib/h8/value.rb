@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module H8
 
   # Wrapper for javascript objects.
@@ -177,6 +179,33 @@ module H8
     end
   end
 
+end
+
+class OpenStruct
+  # OpenStruct converts to plain ruby hash in depth. Primary usage
+  # is when it was used bu javascript and could contain gated objects.
+  def to_ruby depth=0
+    to_h.to_ruby depth+1
+  end
+end
+
+class Hash
+  # Hash copies in depth converting its data. Primary usage
+  # is when it was used bu javascript and could contain gated objects.
+  def to_ruby depth=0
+    res = {}
+    depth += 1
+    each { |k,v| res[k.to_ruby depth] = v.to_ruby depth }
+    res
+  end
+end
+
+class Array
+  # @return new array with all components converted to_ruby
+  def to_ruby depth
+    depth += 1
+    map { |x| x.to_ruby depth }
+  end
 end
 
 # Ruby object's t_ruby does nothing (tree conversion optimization)

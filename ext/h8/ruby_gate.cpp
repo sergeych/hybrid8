@@ -124,7 +124,7 @@ VALUE h8::RubyGate::rescue_callback(VALUE me, VALUE exception_object) {
 VALUE RubyGate::call(VALUE args) {
 	VALUE callable = rb_ary_pop(args);
 	VALUE context = rb_ary_pop(args);
-	VALUE res = rb_funcall(context, rb_intern("safe_proc_call"), 2, callable, args);
+	VALUE res = rb_funcall(context, id_safe_proc_call, 2, callable, args);
 	return res;
 }
 
