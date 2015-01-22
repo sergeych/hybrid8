@@ -92,6 +92,13 @@ void h8::RubyGate::mapSet(Local<String> name, Local<Value> value,
 	rg->setProperty(name, value, info);
 }
 
+void h8::RubyGate::mapDelete(Local<String> name,
+		const PropertyCallbackInfo<Boolean> &info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->deleteProperty(name, info);
+}
+
 void h8::RubyGate::indexGet(uint32_t index,
 		const PropertyCallbackInfo<Value> &info) {
 	RubyGate *rg = RubyGate::unwrap(info.This());
@@ -126,6 +133,11 @@ VALUE RubyGate::call(VALUE args) {
 	VALUE context = rb_ary_pop(args);
 	VALUE res = rb_funcall(context, id_safe_proc_call, 2, callable, args);
 	return res;
+}
+
+VALUE RubyGate::ruby_delete_handler(VALUE args) {
+	VALUE method = rb_ary_pop(args);
+	return rb_funcall(context_class, id_delete_handler, 2, method, args);
 }
 
 VALUE RubyGate::secure_call(VALUE args) {
@@ -180,12 +192,12 @@ void h8::RubyGate::doObjectCallback(
 		rb_ary_push(rb_args, context->ruby_context());
 		rb_ary_push(rb_args, ruby_object);
 		rescued_call(rb_args, call, [&] (VALUE res) {
-			if( res == ruby_object )
-				args.GetReturnValue().Set(args.This());
-			else
-				args.GetReturnValue().Set(context->to_js(res));
-		});
-});
+					if( res == ruby_object )
+					args.GetReturnValue().Set(args.This());
+					else
+					args.GetReturnValue().Set(context->to_js(res));
+				});
+	});
 }
 
 void h8::RubyGate::getProperty(Local<String> name,
@@ -195,9 +207,9 @@ void h8::RubyGate::getProperty(Local<String> name,
 		rb_ary_push(rb_args, ruby_object);
 		rb_ary_push(rb_args, context->to_ruby(name));
 		rescued_call(rb_args, secure_call, [&] (VALUE res) {
-				if( res == ruby_object )
+					if( res == ruby_object )
 					info.GetReturnValue().Set(info.This());
-				else
+					else
 					info.GetReturnValue().Set(context->to_js(res));
 				});
 	});
@@ -207,15 +219,29 @@ void h8::RubyGate::setProperty(Local<String> name, Local<Value> value,
 		const PropertyCallbackInfo<Value> &info) {
 	with_gvl(this, [&] {
 		VALUE rb_args = rb_ary_new2(3);
-		rb_ary_push(rb_args, context->to_ruby(value));
-		rb_ary_push(rb_args, ruby_object);
+		rb_ary_push(rb_args, context->to_ruby(value)); // value
+		rb_ary_push(rb_args, ruby_object);		   // object
 		VALUE method = context->to_ruby(name);
 		method = rb_str_cat2(method, "=");
-		rb_ary_push(rb_args, method);
+		rb_ary_push(rb_args, method);			   // name=
 		rescued_call(rb_args, secure_call, [&] (VALUE res) {
 					info.GetReturnValue().Set(context->to_js(res));
-				});
+		});
 	});
+}
+
+void h8::RubyGate::deleteProperty(Local<String> name,
+		const PropertyCallbackInfo<Boolean> &info) {
+	with_gvl(this, [&] {
+		VALUE rb_args = rb_ary_new2(2);
+		rb_ary_push(rb_args, context->to_ruby(name));	// name
+		rb_ary_push(rb_args, ruby_object);		   		// object
+
+		rescued_call(rb_args, ruby_delete_handler, [&] (VALUE res) {
+					auto success = Boolean::New(isolate(), res == Qnil ? false : true );
+					info.GetReturnValue().Set(success);
+				});
+		});
 }
 
 void h8::RubyGate::getIndex(uint32_t index,

@@ -25,8 +25,8 @@ public:
 	 * @return wrapped RubyGate* or 0
 	 */
 	static RubyGate* unwrap(v8::Handle<v8::Object> handle) {
-		if (handle->InternalFieldCount() == 2
-				&& handle->GetAlignedPointerFromInternalField(1) == RUBYGATE_ID) {
+		if (handle->InternalFieldCount()
+				== 2 && handle->GetAlignedPointerFromInternalField(1) == RUBYGATE_ID) {
 			return ObjectWrap::Unwrap<RubyGate>(handle);
 		}
 		return 0;
@@ -78,7 +78,7 @@ protected:
 	 * extra slots in array if need
 	 */
 	template<class T>
-	static VALUE ruby_args(H8* context,const T& args, unsigned extras = 0) {
+	static VALUE ruby_args(H8* context, const T& args, unsigned extras = 0) {
 		unsigned n = args.Length();
 		VALUE rb_args = rb_ary_new2(n + extras);
 		for (unsigned i = 0; i < n; i++)
@@ -92,6 +92,11 @@ protected:
 	 * reasons it should be the last).
 	 */
 	static VALUE call(VALUE args);
+
+	/**
+	 * Call delete handler for ruby gate.
+	 */
+	static VALUE ruby_delete_handler(VALUE args);
 
 	/**
 	 * Call ruby method via H8::Context#secure_call
@@ -108,12 +113,16 @@ protected:
 	void setProperty(Local<String> name, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
 
+	void deleteProperty(Local<String> name,
+			const PropertyCallbackInfo<Boolean> &info);
+
 	void getIndex(uint32_t index, const PropertyCallbackInfo<Value> &info);
 	void setIndex(uint32_t index, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
 
 	static void GateConstructor(const v8::FunctionCallbackInfo<Value>& args);
-	static void ClassGateConstructor(const v8::FunctionCallbackInfo<Value>& args);
+	static void ClassGateConstructor(
+			const v8::FunctionCallbackInfo<Value>& args);
 private:
 
 	void doObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -124,6 +133,8 @@ private:
 			const PropertyCallbackInfo<Value> &info);
 	static void mapSet(Local<String> name, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
+	static void mapDelete(Local<String> name,
+			const PropertyCallbackInfo<Boolean> &info);
 
 	static void indexGet(uint32_t index,
 			const PropertyCallbackInfo<Value> &info);

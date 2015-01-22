@@ -47,6 +47,13 @@ void h8::JsTimeoutError::raise() const {
 	rb_raise(js_timeout_exception, "timeout expired");
 }
 
+void h8::H8::SetupGateTemplate(const Local<ObjectTemplate>& templ) {
+	templ->SetInternalFieldCount(2);
+	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
+	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet, 0, RubyGate::mapDelete);
+	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
+}
+
 h8::H8::H8()
 : self(Qnil)
 {
@@ -66,11 +73,7 @@ h8::H8::H8()
 	ft->SetClassName(js("RubyGate"));
 	Local<ObjectTemplate> templ = ft->InstanceTemplate();
 
-	templ->SetInternalFieldCount(2);
-	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
-	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
-	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
-
+	SetupGateTemplate(templ);
 	v8::Handle<v8::Context> context = v8::Context::New(isolate, NULL,
 			global);
 
@@ -122,12 +125,7 @@ void h8::H8::gate_class(VALUE name,VALUE callable) {
 	ft->Inherit(getGateFunctionTemplate());
 
 	Local<ObjectTemplate> templ = ft->InstanceTemplate();
-
-	templ->SetInternalFieldCount(2);
-	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
-	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet);
-	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
-
+	SetupGateTemplate(templ);
 	global->Set(class_name, ft->GetFunction());
 }
 

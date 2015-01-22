@@ -113,6 +113,19 @@ module H8
       proc.call *args
     end
 
+    # :nodoc:
+    # Internal handler to properly delete fields/keys from ruby Hashes or
+    # OpenStruct
+    #
+    def self.delete_handler object, args
+      name = args[0]
+      if object.is_a?(OpenStruct)
+        object.delete_field name
+      else
+        object.delete name
+      end
+    end
+
     def self.can_access?(owner)
       owner != Object.class && owner != Kernel && owner != BasicObject.class
     end

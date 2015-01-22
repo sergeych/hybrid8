@@ -313,12 +313,37 @@ describe 'ruby gate' do
         c.coffee 'data.foo = "baz"'
         s.foo.should == 'baz'
         c.coffee 'data.h = { foo: "bar", bar: { baz: 1 } }'
+        c.coffee 'data.bad = "nonono"'
         s.h.foo.should == 'bar'
-        c.coffee 'data.h.bar.baz == 1'
+        s.bad.should == 'nonono'
+        c.coffee 'assert data.h.bar.baz == 1'
+        c.coffee 'delete data.bad'
         s.h.bar.baz.should == 1
         c.coffee 'data.h.bar.arr = ["hello", { one: 2 }]'
         s.to_ruby.should == { 'test' => "bar", 'foo' => "baz", 'h' => { "foo" => "bar", "bar" => { "baz" => 1, "arr" => ["hello", { "one" => 2 }] } } }
       }
+    end
+
+    it 'should delete gated prperties' do
+      s = OpenStruct.new 'foo' => 'bar', 'bar' => 'baz'
+      s.foo.should == 'bar'
+      c = H8::Context.new s: s
+      c.eval('s.foo').should == 'bar'
+      c.eval 'delete s.foo'
+      s.foo.should == nil
+
+      s = Hashie::Mash.new 'foo' => 'bar', 'bar' => 'baz'
+      s.foo.should == 'bar'
+      c = H8::Context.new s: s
+      c.eval('s.foo').should == 'bar'
+      c.eval 'delete s.foo'
+      s.foo.should == nil
+
+      s = { 'foo' => 'bar', 'bar' => 'baz' }
+      c = H8::Context.new s: s
+      c.eval('s.foo').should == 'bar'
+      c.eval 'delete s.foo'
+      s['foo'].should == nil
     end
 
     it 'should access plain arrays (provide numeric indexes)' do

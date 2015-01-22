@@ -19,7 +19,7 @@ extern VALUE value_class;
 extern VALUE ruby_gate_class;
 extern VALUE Rundefined;
 
-extern ID id_is_a, id_safe_call, id_safe_proc_call;
+extern ID id_is_a, id_safe_call, id_safe_proc_call, id_delete_handler;
 
 VALUE protect_ruby(const std::function<VALUE()> &block);
 
@@ -233,6 +233,7 @@ public:
 private:
 	friend VALUE h8::context_alloc(VALUE klass);
 	void invoke(v8::Handle<v8::Script> script, Local<Value>& result);
+	static void SetupGateTemplate(const Local<ObjectTemplate>& templ);
 
 	Isolate *isolate;
 	VALUE self;
