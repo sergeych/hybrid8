@@ -1,4 +1,4 @@
-require 'h8'
+# require 'h8'
 
 def timing name, repetitions = 1, scale = 1
   s = Time.now
@@ -20,14 +20,3 @@ class Console
   end
 end
 
-def js_context
-  cxt         = H8::Context.new
-  cxt[:print] = -> (*args) { puts args.join(' ') }
-  cxt[:console] = Console
-  cxt
-end
-
-def coffee script_file_name
-  @base ||= File.dirname(File.expand_path(__FILE__))
-  H8::Coffee.compile open("#{@base}/#{script_file_name}.coffee").read
-end

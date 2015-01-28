@@ -17,3 +17,11 @@ Moreover, if you run optimized C++ version, you'll have:
 which is, in turn, *1.76 times slower than coffeescript!*
 
 The results are very inspiring, as for me.
+
+## Some ruby platform comarisons
+
+    ruby 2.1.5	: 13.767739 scaled: 68.838695
+    ruby 2.2.0	: 12.859456 scaled: 64.29728
+    rbx 2.1.0	: 9.35995 scaled: 46.799749999999996
+
+Rbx, as expected, is way ahead of MRI but is still too bad to be compared to coffeescript/v8(h8)

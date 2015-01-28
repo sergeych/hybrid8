@@ -8,6 +8,8 @@
 #ifndef JSCATCHER_H_
 #define JSCATCHER_H_
 
+#include <functional>
+
 #include <include/v8.h>
 #include "h8.h"
 

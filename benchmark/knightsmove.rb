@@ -1,52 +1,17 @@
 require './tools'
+require './km'
 
-class Solver
 
-  def initialize rank
-    @n, @nn     = rank, rank*rank
-    @n2         = @n+@n
-    @desk       = []
-    @n.times { @desk << [0] * @n }
-    @depth = 0
-    solve 0, 0
-  end
+def js_context
+  cxt         = H8::Context.new
+  cxt[:print] = -> (*args) { puts args.join(' ') }
+  cxt[:console] = Console
+  cxt
+end
 
-  def solve r, c
-    @desk[r][c] = (@depth+=1)
-    return true if @depth >= @nn
-    moves(r, c) { |r1, c1|
-      return true if solve(r1, c1)
-    }
-    @desk[r][c] = 0
-    @depth      -= 1
-    false
-  end
-
-  @@shifts = [[-2, +1], [-1, +2], [+1, +2], [+2, +1], [+2, -1], [+1, -2], [-1, -2], [-2, -1]]
-
-  def moves r, c
-    @@shifts.each { |sr, sc|
-      r1 = r + sr
-      if r1 >= 0 && r1 < @n
-        c1 = c + sc
-        if c1 >= 0 && c1 < @n
-          yield r1, c1 if @desk[r1][c1] == 0
-        end
-      end
-    }
-  end
-
-  def to_s
-    res = []
-    @n.times do |row|
-      res << @n.times.map { |col|
-        d = @desk[row][col]
-        d == 0 ? '  .' : ("%3d" % d)
-      }.join('')
-    end
-    res.join "\n"
-  end
-
+def coffee script_file_name
+  @base ||= File.dirname(File.expand_path(__FILE__))
+  H8::Coffee.compile open("#{@base}/#{script_file_name}.coffee").read
 end
 
 cs = js_context.eval coffee(:knightsmove)
