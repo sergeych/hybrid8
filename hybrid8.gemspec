@@ -3,8 +3,7 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'h8/version'
-require "rake/extensiontask"
-require 'rubygems/package_task'
+require 'rake'
 
 spec = Gem::Specification.new do |spec|
   spec.name        = "h8"
@@ -30,22 +29,24 @@ spec = Gem::Specification.new do |spec|
   spec.platform = Gem::Platform::RUBY
 
   spec.add_development_dependency "bundler", "~> 1.6"
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "rake-compiler"
+  # spec.add_development_dependency "rake"
+  # spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "rspec", '~> 3.1'
   spec.add_development_dependency 'hashie', '>= 0.1.2'
 
   spec.add_dependency 'pargser', '>= 0.1.2'
+  spec.add_dependency 'rake'
+  spec.add_dependency 'rake-compiler'
 end
 
-Gem::PackageTask.new(spec) do |pkg|
-end
-
-Rake::ExtensionTask.new "h8", spec do |ext|
-  ext.lib_dir        = "lib/h8"
-  ext.source_pattern = "*.{c,cpp,js}"
-  ext.gem_spec       = spec
-end
+# Gem::PackageTask.new(spec) do |pkg|
+# end
+#
+# Rake::ExtensionTask.new "h8", spec do |ext|
+#   ext.lib_dir        = "lib/h8"
+#   ext.source_pattern = "*.{c,cpp,js}"
+#   ext.gem_spec       = spec
+# end
 
 spec
 
