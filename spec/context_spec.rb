@@ -148,9 +148,14 @@ describe 'context' do
 
   it 'should report syntax errors source' do
     c = H8::Context.new
-    expect(->{ c.eval "debug('started'); shit happens!"}).to raise_error { |e|
-                                                              p e.javascript_backtrace
-                                                             }
+    script = <<-END
+      var x = 0;
+      throw new Error("shit happens!");
+    END
+    expect(-> { c.eval script })
+        .to raise_error { |e|
+              (e.javascript_backtrace =~ /\:\d/).should > 0
+            }
   end
 
 end

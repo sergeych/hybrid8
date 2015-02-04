@@ -10,7 +10,7 @@ module H8
   class JsError < Error
 
     # Javascript Error object. May be nil
-    attr :javascript_error
+    attr :javascript_error, :origin_name, :origin_line, :origin_column
 
     # Error name
     def name
@@ -19,7 +19,15 @@ module H8
 
     # String that represents stack trace if any as multiline string (\n separated)
     def javascript_backtrace
-      @javascript_error ? @javascript_error.stack : @message
+      if @javascript_error
+        s = @javascript_error.stack
+        if s !~ /at\s+.*\d+/
+          s += "\n\tat #{@origin_name}:#{@origin_line}:#{@origin_column}\n"
+        end
+        s
+      else
+        @message
+      end
     end
 
     def to_s
@@ -36,7 +44,7 @@ module H8
     def initialize message
       super
       @message = message
-      @source = nil
+      @source  = nil
     end
   end
 

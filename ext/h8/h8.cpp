@@ -30,6 +30,9 @@ void h8::JsError::raise() const {
 				rb_iv_set(ruby_exception, "@message", h8->to_ruby(s));
 				rb_iv_set(ruby_exception, "@javascript_error",
 						h8->to_ruby(jsx));
+				rb_iv_set(ruby_exception, "@origin_name", h8->to_ruby(m->GetScriptResourceName()));
+				rb_iv_set(ruby_exception, "@origin_line", INT2FIX(m->GetLineNumber()));
+				rb_iv_set(ruby_exception, "@origin_column", INT2FIX(m->GetEndColumn()));
 			}
 		}
 		rb_exc_raise(ruby_exception);

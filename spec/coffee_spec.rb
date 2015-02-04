@@ -40,40 +40,6 @@ describe 'coffeescript' do
     }).to raise_error(H8::JsError) { |e| e.to_s.should =~ /test.coffee\:4/ }
   end
 
-  it 'should report exceptions' do
-    src = <<-END
-      fnb = ->
-        throw new Error 'lets check'
-      fna = ->
-        fnb()
-      CoffeeScript.getSourceMap = (name) ->
-        puts "DUMMUY \#{name}"
-        undefined
-
-      # fna()
-      # puts globalsIncluded
-    END
-    script = <<-END
-      function require(name) {
-        puts("REQ! "+name);
-      }
-      var res = CoffeeScript.compile(src, {sourceMap: true, filename: 'inner.coffee'});
-      //var sourceMaps = { 'inner.coffee' : res.sourceMap }
-      // puts("Compiled ok",JSON.stringify(CoffeeScript.sourceMaps));
-      // CoffeeScript.sourceMaps['inner'] = res.sourceMap
-      eval(res.js);
-    END
-    cxt        = H8::Coffee.new.context
-    cxt[:puts] = -> (*args) { puts args.join(' ') }
-    cxt[:src]  = src
-    # cxt[:src] = 'return "hello"'
-    begin
-      res = cxt.eval script, file_name: 'extest.coffee'
-    rescue Exception => e
-      puts e
-    end
-  end
-
   context 'realword' do
     class Room
     end
