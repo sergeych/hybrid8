@@ -18,22 +18,28 @@ void h8::JsError::raise() const {
 			Local<Object> jsx = exception().As<Object>();
 			Local<Value> source = jsx->Get(h8->js("source"));
 			RubyGate *rg = RubyGate::unwrap(source.As<Object>());
-			if (rg) {
-				// Passing thru the Ruby exception
-				ruby_exception = rg->rubyObject();
-			} else {
+//			if (rg) {
+//				// Passing thru the Ruby exception
+//				ruby_exception = rg->rubyObject();
+//			} else {
 				Local<Message> m = message();
 				Local<String> s = m->Get();
 				String::Utf8Value res(s->ToString());
-				ruby_exception = ruby_exception = rb_exc_new2(js_exception,
+
+				VALUE ex_class = rg ? js_nested_exception : js_exception;
+				ruby_exception = rb_exc_new2(ex_class,
 						*res ? *res : "unknown javascript exception");
+
 				rb_iv_set(ruby_exception, "@message", h8->to_ruby(s));
 				rb_iv_set(ruby_exception, "@javascript_error",
 						h8->to_ruby(jsx));
 				rb_iv_set(ruby_exception, "@origin_name", h8->to_ruby(m->GetScriptResourceName()));
 				rb_iv_set(ruby_exception, "@origin_line", INT2FIX(m->GetLineNumber()));
 				rb_iv_set(ruby_exception, "@origin_column", INT2FIX(m->GetEndColumn()));
-			}
+				if( rg ) {
+				    rb_iv_set(ruby_exception, "@ruby_error", rg->rubyObject());
+				}
+//			}
 		}
 		rb_exc_raise(ruby_exception);
 //		}

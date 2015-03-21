@@ -8,7 +8,7 @@ extern "C" {
 void Init_h8(void);
 }
 
-VALUE h8_exception, js_exception, js_timeout_exception;
+VALUE h8_exception, js_exception, js_timeout_exception, js_nested_exception;
 VALUE context_class;
 VALUE ruby_gate_class;
 VALUE value_class;
@@ -231,6 +231,7 @@ void Init_h8(void) {
 
 	h8_exception = rb_define_class_under(h8, "Error", rb_eStandardError);
 	js_exception = rb_define_class_under(h8, "JsError", h8_exception);
+	js_nested_exception = rb_define_class_under(h8, "NestedError", js_exception);
 	js_timeout_exception = rb_define_class_under(h8, "TimeoutError",
 			js_exception);
 

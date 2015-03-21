@@ -39,6 +39,13 @@ module H8
     end
   end
 
+  # The exception that carries out uncaught ruby exception #ruby_error
+  # therefore it is possible to get javascript backtrace too
+  class NestedError < JsError
+    # The uncaught ruby exception
+    attr :ruby_error
+  end
+
   # Script execution is timed out (see H8::Context#eval timeout parameter)
   class TimeoutError < JsError
     def initialize message

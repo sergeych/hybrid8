@@ -274,7 +274,7 @@ describe 'js_gate' do
     }).to raise_error(H8::JsError)
   end
 
-  it 'should pass thru uncaught ruby exceptions from js->ruby callbacks' do
+  it 'should report thru uncaught ruby exceptions from js->ruby callbacks' do
     class MyException < StandardError;
     end;
     cxt            = H8::Context.new
@@ -287,7 +287,9 @@ describe 'js_gate' do
     End
     expect(-> {
       res.call('foo', 'bar').should == 'foo:bar'
-    }).to raise_error(MyException)
+    }).to raise_error(H8::NestedError) { |e|
+            e.ruby_error.should be_instance_of(MyException)
+          }
   end
 
   it 'should dynamically add and remove properties to js objects' do

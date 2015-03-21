@@ -1,5 +1,8 @@
 # Hybrid8, aka H8
 
+*version 0.5* breaks the way nested exceptions are passed. Now riby -> js -> ruby uncaught
+exception is wrapped into H8::NestedError so one can get both ruby and javascript trace.
+
 _Warning_ this gem is in public beta at the moment - beta testers are welcome! It means it's not
 yet stable enough for running in production - we haven't tried it yet ourselves.
 

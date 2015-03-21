@@ -7,6 +7,7 @@ require 'h8/command'
 cmd = nil
 begin
   cmd = H8::Command.new(*ARGV)
+rescue SystemExit
 rescue Exception => e
   STDERR.puts "Error: #{e}\n\n#{e.backtrace.join("\n")}"
   STDERR.puts cmd.usage

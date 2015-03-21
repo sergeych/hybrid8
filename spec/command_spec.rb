@@ -7,7 +7,7 @@ describe 'cli' do
   before :each do
     @out     = StringIO.new '', 'w'
     @err     = StringIO.new '', 'w'
-    @command = H8::Command.new out: @out, err: @err
+    @command = H8::Command.new out: @out, err: @err, dont_run: true
   end
 
   def output
@@ -27,12 +27,6 @@ describe 'cli' do
 
   def make_path *path_components
     File.expand_path(File.join(File.dirname(__FILE__), *path_components))
-  end
-
-  it 'should print usage' do
-    expect(-> { @command.run }).to raise_error(RuntimeError, "Must provide at least one file")
-    expect(@command.usage =~ /Usage:/).to be_truthy
-    # puts @command.usage
   end
 
   it 'should print' do

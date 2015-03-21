@@ -7,11 +7,19 @@ module H8
 
   class Command
 
-    def initialize *args, out: STDOUT, err: STDERR
+    def initialize *args, out: STDOUT, err: STDERR, dont_run: false
       @out = out
       @err = err
 
-      run *args if args.length > 0
+      run *args unless dont_run
+    end
+
+    def usage
+      puts "h8 #{H8::VERSION} CLI runner\n"
+      puts "Usage:\n h8 [keys] file1..."
+      puts
+      puts "executes 1 or more javascript/coffeescript files connected with Ruby environment"
+      puts @parser.keys_doc
     end
 
     def run *args
@@ -33,8 +41,12 @@ module H8
           count += 1
         end
       }
+          .key('-h', '--h') {
+        usage
+        count = -100000000
+      }
 
-      @parser.parse { |file|
+      rest = @parser.parse { |file|
         count   += 1
         @script = open(file, 'r').read
         file.downcase.end_with?('.coffee') and @script = H8::Coffee.compile(@script)
@@ -42,7 +54,10 @@ module H8
         context.eval @script
       }
 
-      count > 0 or raise 'Must provide at least one file'
+      unless count != 0
+        STDERR.puts 'H8: error: provide at least one file (use -h for help)'
+        exit 300
+      end
     end
 
     def context
@@ -55,15 +70,9 @@ module H8
         cxt[:puts]      = print
         cxt[:open]      = -> (name, mode='r', block=nil) { Stream.new(name, mode, block) }
         cxt['__FILE__'] = @file ? @file.to_s : '<inline>'
-        cxt[:File] = FileProxy.new
+        cxt[:File]      = FileProxy.new
         cxt
       end
-    end
-
-    def usage
-      "\nh8 #{H8::VERSION} CLI inteface\n\n" +
-          "Usage: h8 <file.js/file.coffe>\n\n" +
-          @parser.keys_doc
     end
 
     class FileProxy

@@ -13,7 +13,7 @@
 using namespace v8;
 using namespace std;
 
-extern VALUE h8_exception, js_exception, js_timeout_exception;
+extern VALUE h8_exception, js_exception, js_timeout_exception, js_nested_exception;
 extern VALUE context_class;
 extern VALUE value_class;
 extern VALUE ruby_gate_class;

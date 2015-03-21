@@ -135,8 +135,9 @@ describe 'ruby gate' do
       result = fn(11, 22);
       throw Error("It should not happen");
       End
-    }).to raise_error(MyException) { |e|
-            e.message.should == 'Shit happens'
+    }).to raise_error(H8::NestedError) { |e|
+            e.ruby_error.should be_instance_of(MyException)
+            e.ruby_error.message.should == 'Shit happens'
           }
   end
 
@@ -295,7 +296,7 @@ describe 'ruby gate' do
       # see Test class implementation: this is a valid test
       cxt.eval("t['foo'];").should == 'init[]'
       cxt.eval("t.foo").should == 'init[]'
-      expect(-> { cxt.eval("t['foo1'];") }).to raise_error(RuntimeError)
+      expect(-> { cxt.eval("t['foo1'];") }).to raise_error(H8::NestedError)
       cxt.eval("t.foo='bar'");
       cxt.eval("t.foo;").should == 'bar'
       t.val.should == 'bar'
@@ -456,7 +457,9 @@ describe 'ruby gate' do
 
       # We call gated ruby object with wrong number of args
       # which in turn causes attempt to call not callable result:
-      expect(-> { cxt.eval('g1.checkself(12)') }).to raise_error(NoMethodError)
+      expect(-> { cxt.eval('g1.checkself(12)') }).to raise_error(H8::NestedError) { |e|
+                                                      e.ruby_error.should be_instance_of(NoMethodError)
+                                                     }
     end
 
     it 'should return self from gated class' do
