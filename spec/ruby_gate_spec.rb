@@ -366,6 +366,14 @@ describe 'ruby gate' do
       h['one'].should == 1
     end
 
+    it 'should access ruby and java array functions' do
+      cxt     = H8::Context.new
+      src = cxt[:h] = [1,20,3,4,5]
+      cxt.eval("h.reverse()").should == [5, 4, 3, 20, 1]
+      cxt.eval("h.sort()").should == [1,3,4,5,20]
+      cxt.eval("h.select(function(x){return x >=4;}).sort()").should == [4, 5, 20]
+    end
+
     it 'should pass varargs' do
       cxt        = H8::Context.new
       cxt[:test] = -> (args) {

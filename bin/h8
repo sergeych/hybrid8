@@ -1,5 +1,7 @@
 #!/bin/env ruby
-require 'h8'
+#
+#
+require File.expand_path("#{File.dirname(__FILE__)}/../lib/h8")
 require 'h8/command'
 
 cmd = nil

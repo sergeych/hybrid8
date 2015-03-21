@@ -42,7 +42,9 @@ public:
 
 	virtual void free() {
 //		printf("RG::FREE(%p)\n", this);
-		delete this;
+		context->unregister_ruby_gate(this);
+		context = 0;
+//		delete this;
 	}
 
 	VALUE rubyObject() const {
@@ -51,9 +53,12 @@ public:
 
 	virtual ~RubyGate() {
 //		puts("~RG()");
-		context->unregister_ruby_gate(this);
-		persistent().ClearWeak();
-		persistent().Reset();
+        if( context ) {
+//            puts("rg2");
+    		context->unregister_ruby_gate(this);
+        }
+//		persistent().ClearWeak();
+//		persistent().Reset();
 		// The rest is done by the base classes
 	}
 

@@ -180,7 +180,7 @@ void h8::H8::register_ruby_gate(RubyGate* gate) {
 }
 
 void h8::H8::unregister_ruby_gate(RubyGate* gate) {
-	add_resource(gate);
+	gate->unlink();
 	id_map.erase(gate->ruby_object);
 }
 

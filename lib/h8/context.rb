@@ -1,6 +1,14 @@
 require 'thread'
 require 'h8'
 
+class Array
+  def _select_js callable
+    select { |item|
+      callable.call item
+    }
+  end
+end
+
 module H8
 
   class Context
@@ -68,6 +76,9 @@ module H8
     # It has very complex logic so the security model update should be done somehow
     # else.
     def self.secure_call instance, method, args=nil
+      if instance.is_a?(Array)
+        method == 'select' and method = '_select_js'
+      end
       method = method.to_sym
       begin
         m     = instance.public_method(method)
@@ -110,7 +121,16 @@ module H8
     # This is workaround for buggy rb_proc_call which produces segfaults
     # if proc is not exactly a proc, so we call it like this:
     def safe_proc_call proc, args
-      proc.call *args
+      if proc.respond_to?(:call)
+        proc.call(*args)
+      else
+        if args.length == 0
+          proc # Popular bug: call no-arg method not like a property
+        else
+          raise NoMethodError, "Invalid callable"
+        end
+      end
+      # proc.is_a?(Array) ? proc : proc.call(*args)
     end
 
     # :nodoc:
@@ -127,6 +147,7 @@ module H8
     end
 
     def self.can_access?(owner)
+      return true if owner.is_a?(Array.class)
       owner != Object.class && owner != Kernel && owner != BasicObject.class
     end
 
