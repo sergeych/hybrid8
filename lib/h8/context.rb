@@ -22,11 +22,7 @@ end
 
 class Object
   def __to_json
-    if respond_to?(:as_json)
-      as_json
-    else
-      JSON[JSON[self]]
-    end
+    JSON.unparse self
   end
 end
 
