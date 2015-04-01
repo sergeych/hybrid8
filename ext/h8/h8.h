@@ -233,7 +233,7 @@ public:
 private:
 	friend VALUE h8::context_alloc(VALUE klass);
 	void invoke(v8::Handle<v8::Script> script, Local<Value>& result);
-	static void SetupGateTemplate(const Local<ObjectTemplate>& templ);
+	void SetupGateTemplate(const Local<ObjectTemplate>& templ);
 
 	Isolate *isolate;
 	VALUE self;

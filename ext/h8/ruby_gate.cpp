@@ -75,6 +75,12 @@ h8::RubyGate::RubyGate(H8* _context, Handle<Object> instance, VALUE object) :
 
 void h8::RubyGate::mapGet(Local<String> name,
 		const PropertyCallbackInfo<Value> &info) {
+	v8::String::Utf8Value val(name);
+	if( strcmp(*val, "prototype") == 0 ) {
+		info.GetReturnValue().Set(info.This()->GetPrototype());
+		return;
+	}
+
 	Local<Value> loc = info.This()->GetRealNamedPropertyInPrototypeChain(name);
 	if (!loc.IsEmpty())
 		info.GetReturnValue().Set(loc);
@@ -220,14 +226,14 @@ void h8::RubyGate::setProperty(Local<String> name, Local<Value> value,
 	with_gvl(this, [&] {
 		VALUE rb_args = rb_ary_new2(3);
 		rb_ary_push(rb_args, context->to_ruby(value)); // value
-		rb_ary_push(rb_args, ruby_object);		   // object
-		VALUE method = context->to_ruby(name);
-		method = rb_str_cat2(method, "=");
-		rb_ary_push(rb_args, method);			   // name=
-		rescued_call(rb_args, secure_call, [&] (VALUE res) {
-					info.GetReturnValue().Set(context->to_js(res));
+			rb_ary_push(rb_args, ruby_object);// object
+			VALUE method = context->to_ruby(name);
+			method = rb_str_cat2(method, "=");
+			rb_ary_push(rb_args, method);// name=
+			rescued_call(rb_args, secure_call, [&] (VALUE res) {
+						info.GetReturnValue().Set(context->to_js(res));
+					});
 		});
-	});
 }
 
 void h8::RubyGate::deleteProperty(Local<String> name,
@@ -235,12 +241,12 @@ void h8::RubyGate::deleteProperty(Local<String> name,
 	with_gvl(this, [&] {
 		VALUE rb_args = rb_ary_new2(2);
 		rb_ary_push(rb_args, context->to_ruby(name));	// name
-		rb_ary_push(rb_args, ruby_object);		   		// object
+			rb_ary_push(rb_args, ruby_object);// object
 
-		rescued_call(rb_args, ruby_delete_handler, [&] (VALUE res) {
-					auto success = Boolean::New(isolate(), res == Qnil ? false : true );
-					info.GetReturnValue().Set(success);
-				});
+			rescued_call(rb_args, ruby_delete_handler, [&] (VALUE res) {
+						auto success = Boolean::New(isolate(), res == Qnil ? false : true );
+						info.GetReturnValue().Set(success);
+					});
 		});
 }
 

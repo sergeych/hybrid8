@@ -1,11 +1,32 @@
 require 'thread'
 require 'h8'
+require 'json'
 
 class Array
   def _select_js callable
     select { |item|
       callable.call item
     }
+  end
+
+  def indexOf item
+    index(item) || -1
+  end
+end
+
+class String
+  def indexOf item
+    index(item) || -1
+  end
+end
+
+class Object
+  def __to_json
+    if respond_to?(:as_json)
+      as_json
+    else
+      JSON[JSON[self]]
+    end
   end
 end
 
@@ -19,7 +40,12 @@ module H8
       _set_var '___create_ruby_class', -> (cls, args) {
         _do_create_ruby_class cls, args
       }
-      # noglobals or execute_script 'globals.coffee'
+
+      self[:debug] = -> (*args) {
+        puts args.join(' ')
+      }
+
+      noglobals or execute_script 'globals.coffee'
     end
 
     # set variables from keyword arguments to this context
@@ -76,6 +102,7 @@ module H8
     # It has very complex logic so the security model update should be done somehow
     # else.
     def self.secure_call instance, method, args=nil
+      # p [:sc, instance, method, args]
       if instance.is_a?(Array)
         method == 'select' and method = '_select_js'
       end
@@ -177,9 +204,9 @@ module H8
     @@cache = {}
 
     def execute_script name
-      p [:exs, name]
+      # p [:exs, name]
       script = @@cache[name] ||= begin
-        p 'cache miss'
+        # p 'cache miss'
         script = open(File.join(@@base, name), 'r').read
         name.downcase.end_with?('.coffee') ? H8::Coffee.compile(script) : script
       end

@@ -56,11 +56,18 @@ void h8::JsTimeoutError::raise() const {
 	rb_raise(js_timeout_exception, "timeout expired");
 }
 
+//static void prototype_cb(Local<String> prop,const PropertyCallbackInfo<Value>& info) {
+//	puts("PROTOCB!");
+//	info.GetReturnValue().Set(info.This()->GetPrototype());
+//}
+
 void h8::H8::SetupGateTemplate(const Local<ObjectTemplate>& templ) {
 	templ->SetInternalFieldCount(2);
 	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
 	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet, 0, RubyGate::mapDelete);
 	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
+//	templ->SetAccessor(String::NewFromUtf8(isolate, "prototype"),
+//			prototype_cb);
 }
 
 h8::H8::H8()
@@ -95,6 +102,10 @@ h8::H8::H8()
 	persistent_context.Reset(isolate, context);
 	gate_function_template.Reset(isolate,ft);
 	gate_function.Reset(isolate,fn);
+
+	ft->Set(String::NewFromUtf8(isolate, "prototype"),
+			ft->GetFunction());
+
 }
 
 

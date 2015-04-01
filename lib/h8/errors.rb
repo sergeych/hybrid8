@@ -44,6 +44,10 @@ module H8
   class NestedError < JsError
     # The uncaught ruby exception
     attr :ruby_error
+
+    def to_s
+      ruby_error.to_s
+    end
   end
 
   # Script execution is timed out (see H8::Context#eval timeout parameter)

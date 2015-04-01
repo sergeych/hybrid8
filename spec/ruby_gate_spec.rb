@@ -368,11 +368,42 @@ describe 'ruby gate' do
     end
 
     it 'should access ruby and java array functions' do
-      cxt     = H8::Context.new
-      src = cxt[:h] = [1,20,3,4,5]
-      cxt.eval("h.reverse()").should == [5, 4, 3, 20, 1]
-      cxt.eval("h.sort()").should == [1,3,4,5,20]
-      cxt.eval("h.select(function(x){return x >=4;}).sort()").should == [4, 5, 20]
+      begin
+        cxt = H8::Context.new
+        src = cxt[:h] = [1, 20, 3, 4, 5]
+        cxt.eval("h.reverse()").should == [5, 4, 3, 20, 1]
+        cxt.eval("h.sort()").should == [1, 3, 4, 5, 20]
+        cxt.eval("h.select(function(x){return x >=4;}).sort()").should == [4, 5, 20]
+        cxt.eval("h.indexOf(20)").should == 1
+        cxt.eval("h.indexOf(21)").should == -1
+      rescue H8::NestedError => e
+        puts e.ruby_error.backtrace.join("\n")
+        raise
+      end
+    end
+
+    it 'should access ruby string functions' do
+      begin
+        cxt = H8::Context.new
+        src = cxt[:h] = "Hello!"
+        cxt.eval("h.indexOf('ll')").should == 2
+        cxt.eval("h.indexOf('meow')").should == -1
+      rescue H8::NestedError => e
+        puts e.ruby_error.backtrace.join("\n")
+        raise
+      end
+    end
+
+    it 'should process to_json' do
+      begin
+        cxt = H8::Context.new
+        src = cxt[:h] = { 'hello' => 'world' }
+        cxt.eval("JSON.stringify(h)").should == "{\"hello\":\"world\"}"
+      rescue H8::NestedError => e
+        puts e.ruby_error.backtrace.join("\n")
+        raise
+      end
+
     end
 
     it 'should pass varargs' do
@@ -458,7 +489,7 @@ describe 'ruby gate' do
       # We call gated ruby object with wrong number of args
       # which in turn causes attempt to call not callable result:
       expect(-> { cxt.eval('g1.checkself(12)') }).to raise_error(H8::NestedError) { |e|
-                                                      e.ruby_error.should be_instance_of(NoMethodError)
+                                                       e.ruby_error.should be_instance_of(NoMethodError)
                                                      }
     end
 
