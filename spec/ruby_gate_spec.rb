@@ -404,6 +404,13 @@ describe 'ruby gate' do
 
         src = cxt[:h] = { 'one' => cxt.eval("[ 'hello', { wor: 'ld'} ]") }
         JSON[cxt.eval("JSON.stringify(h)")].should == src
+
+        src = cxt[:h] = Hashie::Mash.new
+        res = cxt.coffee <<-End
+          h.arr = (c*10 for c in [-1, +1]);
+          return JSON.stringify(h)
+        End
+        res.should == "{\"arr\":[-10,10]}"
       rescue H8::NestedError => e
         puts e.ruby_error.backtrace.join("\n")
         raise
