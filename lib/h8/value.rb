@@ -111,6 +111,10 @@ module H8
       each.reduce({}) { |all, kv| all[kv[0]] = kv[1].to_ruby depth; all }
     end
 
+    def to_json *params
+      __rb_to_js
+    end
+
     # Iterate over javascript object keys
     def each_key
       keys.each

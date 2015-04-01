@@ -397,7 +397,12 @@ describe 'ruby gate' do
     it 'should process to_json' do
       begin
         cxt = H8::Context.new
-        src = cxt[:h] = { 'hello' => { 'my' => 'world', 'arr' => [1,2,'tre'] } }
+        src = cxt[:h] = { 'hello' => { 'my' => 'world', 'arr' => [1, 2, 'tre'] } }
+        JSON[cxt.eval("JSON.stringify(h)")].should == src
+        src = cxt[:h] = [-1, -2, { 'hello' => { 'my' => 'world', 'arr' => [1, 2, 'tre'] } }]
+        JSON[cxt.eval("JSON.stringify(h)")].should == src
+
+        src = cxt[:h] = { 'one' => cxt.eval("[ 'hello', { wor: 'ld'} ]") }
         JSON[cxt.eval("JSON.stringify(h)")].should == src
       rescue H8::NestedError => e
         puts e.ruby_error.backtrace.join("\n")
