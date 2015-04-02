@@ -1,6 +1,8 @@
 require 'thread'
 require 'h8'
 require 'json'
+require 'ostruct'
+require 'hashie'
 
 class Array
   def _select_js callable
@@ -12,6 +14,12 @@ class Array
   def indexOf item
     index(item) || -1
   end
+
+  def splice(start, len, *replace)
+    ret = self[start, len]
+    self[start, len] = replace
+    ret
+  end
 end
 
 class String
@@ -20,10 +28,46 @@ class String
   end
 end
 
+class OpenStruct
+
+  def __to_json
+    JSON.unparse to_h
+  end
+
+  def __js_enumerate
+    to_h.keys.map(&:to_s)
+  end
+
+end
+
+def Hashie::Mash
+  def __to_json
+    JSON.unparse self
+  end
+
+  def __js_enumerate
+    to_h.keys.map(&:to_s)
+  end
+
+end
+
 class Object
   def __to_json
     JSON.unparse self
   end
+
+  def __js_has_property name
+    __js_enumerate.include?(name)
+  end
+
+  def __js_enumerate
+    if respond_to?(:keys)
+      self.keys.map(&:to_s)
+    else
+      []
+    end
+  end
+
 end
 
 module H8
@@ -102,12 +146,18 @@ module H8
       if instance.is_a?(Array)
         method == 'select' and method = '_select_js'
       end
+      immediate_call = if method[0] == '!'
+                         method = method[1..-1]
+                         true
+                       else
+                         false
+                       end
       method = method.to_sym
       begin
         m     = instance.public_method(method)
         owner = m.owner
         if can_access?(owner)
-          return m.call(*args) if method[0] == '[' || method[-1] == '='
+          return m.call(*args) if method[0] == '[' || method[-1] == '=' || immediate_call
           if m.arity != 0
             return ProcGate.new( -> (*args) { m.call *args } )
           else

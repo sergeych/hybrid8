@@ -117,9 +117,13 @@ protected:
 			const PropertyCallbackInfo<Value> &info);
 	void setProperty(Local<String> name, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
+	void queryProperty(Local<String> name,
+			const PropertyCallbackInfo<Integer> &info);
 
 	void deleteProperty(Local<String> name,
 			const PropertyCallbackInfo<Boolean> &info);
+
+	void enumerateProperties(const PropertyCallbackInfo<Array>& info);
 
 	void getIndex(uint32_t index, const PropertyCallbackInfo<Value> &info);
 	void setIndex(uint32_t index, Local<Value> value,
@@ -138,13 +142,17 @@ private:
 			const PropertyCallbackInfo<Value> &info);
 	static void mapSet(Local<String> name, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
+	static void mapQuery(Local<String> name,
+			const PropertyCallbackInfo<Integer> &info);
 	static void mapDelete(Local<String> name,
 			const PropertyCallbackInfo<Boolean> &info);
+	static void mapEnumerate(const PropertyCallbackInfo<Array>& info);
 
 	static void indexGet(uint32_t index,
 			const PropertyCallbackInfo<Value> &info);
 	static void indexSet(uint32_t index, Local<Value> value,
 			const PropertyCallbackInfo<Value> &info);
+	static void indexEnumerate(const PropertyCallbackInfo<Array>& info);
 
 	void throw_js();
 

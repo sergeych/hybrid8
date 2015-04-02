@@ -64,8 +64,8 @@ void h8::JsTimeoutError::raise() const {
 void h8::H8::SetupGateTemplate(const Local<ObjectTemplate>& templ) {
 	templ->SetInternalFieldCount(2);
 	templ->SetCallAsFunctionHandler(&RubyGate::ObjectCallback);
-	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet, 0, RubyGate::mapDelete);
-	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet);
+	templ->SetIndexedPropertyHandler(RubyGate::indexGet, RubyGate::indexSet,0,0,RubyGate::indexEnumerate);
+	templ->SetNamedPropertyHandler(RubyGate::mapGet, RubyGate::mapSet, RubyGate::mapQuery, RubyGate::mapDelete, RubyGate::mapEnumerate);
 //	templ->SetAccessor(String::NewFromUtf8(isolate, "prototype"),
 //			prototype_cb);
 }

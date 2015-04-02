@@ -394,6 +394,43 @@ describe 'ruby gate' do
       end
     end
 
+    it 'should enumerate hashes' do
+      begin
+        cxt = H8::Context.new
+        src = cxt[:h] = { "the" => "test", "value" => 121 }
+        res = cxt.coffee <<-End
+          res = {}
+          for own k,v of h
+            res[k] = v
+          return res
+        End
+        res.should == src
+        src1 = cxt[:h] = OpenStruct.new
+        src1.the =  "test"
+        src1.value = 121
+        res = cxt.coffee <<-End
+          res = {}
+          for own k,v of h
+            res[k] = v
+          return res
+        End
+        res.should == src
+        cxt = H8::Context.new
+        src = cxt[:h] = Hashie::Mash.new  "the" => "test", "value" => 121
+        res = cxt.coffee <<-End
+          res = {}
+          for own k,v of h
+            res[k] = v
+          return res
+        End
+        res.should == src
+      rescue H8::NestedError => e
+        puts e.ruby_error.backtrace.join("\n")
+        raise
+      end
+    end
+
+
     it 'should process to_json' do
       begin
         cxt = H8::Context.new
@@ -415,7 +452,6 @@ describe 'ruby gate' do
         puts e.ruby_error.backtrace.join("\n")
         raise
       end
-
     end
 
     it 'should pass varargs' do

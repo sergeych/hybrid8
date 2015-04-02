@@ -76,7 +76,7 @@ h8::RubyGate::RubyGate(H8* _context, Handle<Object> instance, VALUE object) :
 void h8::RubyGate::mapGet(Local<String> name,
 		const PropertyCallbackInfo<Value> &info) {
 	v8::String::Utf8Value val(name);
-	if( strcmp(*val, "prototype") == 0 ) {
+	if (strcmp(*val, "prototype") == 0) {
 		info.GetReturnValue().Set(info.This()->GetPrototype());
 		return;
 	}
@@ -105,6 +105,19 @@ void h8::RubyGate::mapDelete(Local<String> name,
 	rg->deleteProperty(name, info);
 }
 
+void h8::RubyGate::mapQuery(Local<String> name,
+		const PropertyCallbackInfo<Integer>& info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->queryProperty(name, info);
+}
+
+void h8::RubyGate::mapEnumerate(const PropertyCallbackInfo<Array> &info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->enumerateProperties(info);
+}
+
 void h8::RubyGate::indexGet(uint32_t index,
 		const PropertyCallbackInfo<Value> &info) {
 	RubyGate *rg = RubyGate::unwrap(info.This());
@@ -117,6 +130,12 @@ void h8::RubyGate::indexSet(uint32_t index, Local<Value> value,
 	RubyGate *rg = RubyGate::unwrap(info.This());
 	assert(rg != 0);
 	rg->setIndex(index, value, info);
+}
+
+void h8::RubyGate::indexEnumerate(const PropertyCallbackInfo<Array>& info) {
+	RubyGate *rg = RubyGate::unwrap(info.This());
+	assert(rg != 0);
+	rg->enumerateProperties(info);
 }
 
 void h8::RubyGate::ObjectCallback(
@@ -248,6 +267,40 @@ void h8::RubyGate::deleteProperty(Local<String> name,
 						info.GetReturnValue().Set(success);
 					});
 		});
+}
+
+void h8::RubyGate::enumerateProperties(
+		const PropertyCallbackInfo<Array>& info) {
+	with_gvl(this,
+			[&] {
+				VALUE rb_args = rb_ary_new2(2);
+				rb_ary_push(rb_args, ruby_object);
+				rb_ary_push(rb_args, rb_str_new2("__js_enumerate"));
+				rescued_call(rb_args, secure_call, [&] (VALUE res) {
+							int len = (int) RARRAY_LEN(res);
+							v8::Handle<Array> a = v8::Array::New(context->getIsolate(), len);
+							for(int i=0; i<len; i++) {
+								a->Set(i, context->to_js(rb_ary_entry(res, i)));
+							}
+							info.GetReturnValue().Set(a);
+						});
+			});
+}
+
+void h8::RubyGate::queryProperty(Local<String> name,
+		const PropertyCallbackInfo<Integer>& info) {
+	with_gvl(this,
+			[&] {
+				VALUE rb_args = rb_ary_new2(2);
+				rb_ary_push(rb_args, context->to_ruby(name));
+				rb_ary_push(rb_args, ruby_object);
+				rb_ary_push(rb_args, rb_str_new2("!__js_has_property"));
+				rescued_call(rb_args, secure_call, [&] (VALUE res) {
+							if( res != Qnil && res != Qfalse) {
+								info.GetReturnValue().Set(Integer::New(context->getIsolate(), v8::None));
+							}
+						});
+			});
 }
 
 void h8::RubyGate::getIndex(uint32_t index,
