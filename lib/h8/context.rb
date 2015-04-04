@@ -5,16 +5,19 @@ require 'ostruct'
 require 'hashie'
 
 class Array
-  def _select_js callable
+  # JS select() implementation
+  def __js_select callable
     select { |item|
       callable.call item
     }
   end
 
+  # JS indexOf implementation
   def indexOf item
     index(item) || -1
   end
 
+  # JS splice() implementation
   def splice(start, len, *replace)
     ret = self[start, len]
     self[start, len] = replace
@@ -23,6 +26,7 @@ class Array
 end
 
 class String
+  # JS compatibility
   def indexOf item
     index(item) || -1
   end
@@ -52,14 +56,23 @@ def Hashie::Mash
 end
 
 class Object
+  # Integration with JSON.stringify in JS. Method should return valid
+  # JSON _string representation_. Works using standard ruby JSON or Rails
+  # ties. Usually you do not override it but implement #to_json or, in Rails,
+  # #as_json *args. But in some cases you might need to implement it directly
   def __to_json
     JSON.unparse self
   end
 
+  # JS hasOwnProperty() implementation
   def __js_has_property name
     __js_enumerate.include?(name)
   end
 
+  # Enumerate _own properties_ to access from JS code. Think about calling super
+  # when overriding it.
+  #
+  # @return [Array[String]] list all own properties.
   def __js_enumerate
     if respond_to?(:keys)
       self.keys.map(&:to_s)
@@ -72,6 +85,12 @@ end
 
 module H8
 
+  # Context is an environment where javscripts and coffeescripts can be executed. Context holds
+  # its state between execution and can therefore consume large amount of memory if called
+  # repeatedly for a long time. You can release some of its memory by setting to null its
+  # global level variables, but the best is to allocate new Context as need leaving old
+  # instances fo GC. Please note that Context can not be GC'd if any of it objects is gated
+  # and held by ruby somewhere.
   class Context
     # Create new context optionally providing variables hash
     def initialize noglobals: false, **kwargs
@@ -144,7 +163,7 @@ module H8
     def self.secure_call instance, method, args=nil
       # p [:sc, instance, method, args]
       if instance.is_a?(Array)
-        method == 'select' and method = '_select_js'
+        method == 'select' and method = '__js_select'
       end
       immediate_call = if method[0] == '!'
                          method = method[1..-1]
@@ -186,6 +205,9 @@ module H8
           end
         rescue NameError
           # It means there is no [] or []=, e.g. undefined
+        rescue TypeError
+          raise unless $!.to_s =~ /no implicit conversion of String into Integer/
+          # This also means that property is not found
         end
       end
       H8::Undefined
