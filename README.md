@@ -1,15 +1,6 @@
 # Hybrid8, aka H8
 
-*version 0.5* breaks the way nested exceptions are passed. Now riby -> js -> ruby uncaught
-exception is wrapped into H8::NestedError so one can get both ruby and javascript trace.
-
-_Warning_ this gem is in public beta at the moment - beta testers are welcome! It means it's not
-yet stable enough for running in production - we haven't tried it yet ourselves.
-
-_Current implementation is somewhat slower than it could be, with the price of letting ruby threads
-and javascript code in different H8::Context instances run in parallel on multicore hardware_.
-Please let me know if it significantly degrades performance on ruby-to-js calls and back. In other words,
-with 8-core cpu you can create 8 H8::Contexts and run them truly parallel.
+Current development state: works in production environment.
 
 This gem was intended to replace therubyracer for many reasons:
 
