@@ -28,14 +28,14 @@ spec = Gem::Specification.new do |spec|
 
   spec.platform = Gem::Platform::RUBY
 
-  spec.add_development_dependency "bundler", "~> 1.6"
+  spec.add_development_dependency "bundler", "~> 2.0"
   # spec.add_development_dependency "rake"
   # spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "rspec", '~> 3.1'
   spec.add_development_dependency 'hashie', '>= 0.1.2'
 
   spec.add_dependency 'pargser', '>= 0.1.2'
-  spec.add_dependency 'rake'
+  spec.add_dependency 'rake', '>= 12.3.3'
   spec.add_dependency 'rake-compiler', '>= 0.9.4'
 end
 
